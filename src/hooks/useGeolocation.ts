@@ -98,11 +98,31 @@ export function useGeolocation(): GeolocationState {
 
 async function reverseGeocode(lat: number, lon: number): Promise<string> {
   const res = await fetch(
-    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`,
-    { headers: { 'Accept-Language': 'en' } }
+    `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=14`,
+    { headers: { 'Accept-Language': 'en', 'User-Agent': 'StormGrid/1.0' } }
   );
   if (!res.ok) throw new Error('Geocoding failed');
   const data = await res.json();
-  const addr = data.address;
-  return addr.city ?? addr.town ?? addr.suburb ?? addr.village ?? addr.county ?? 'Unknown Location';
+  const addr = data.address ?? {};
+
+  // Priority order for NZ and general addresses:
+  // neighbourhood/suburb give the most local area name;
+  // fall through to larger administrative areas if needed
+  const localName =
+    addr.neighbourhood ??
+    addr.suburb ??
+    addr.quarter ??
+    addr.village ??
+    addr.hamlet ??
+    addr.town ??
+    addr.city_district ??
+    addr.city ??
+    addr.municipality ??
+    addr.county ??
+    addr.state_district ??
+    addr.state ??
+    null;
+
+  if (!localName) throw new Error('No place name in response');
+  return localName;
 }
