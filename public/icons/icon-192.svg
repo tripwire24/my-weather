@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="24" fill="#0a0a0f"/>
+  <g transform="translate(96,96)">
+    <!-- Hexagonal grid lines -->
+    <path d="M-40,-70 L40,-70 L70,0 L40,70 L-40,70 L-70,0 Z" fill="none" stroke="#00fff2" stroke-width="1.5" opacity="0.3"/>
+    <path d="M-25,-43 L25,-43 L43,0 L25,43 L-25,43 L-43,0 Z" fill="none" stroke="#00fff2" stroke-width="1" opacity="0.2"/>
+    <!-- Lightning bolt -->
+    <path d="M-8,-40 L12,-40 L4,-8 L20,-8 L-12,44 L-4,8 L-20,8 Z" fill="#00fff2" opacity="0.9"/>
+    <!-- Glow effect -->
+    <path d="M-8,-40 L12,-40 L4,-8 L20,-8 L-12,44 L-4,8 L-20,8 Z" fill="none" stroke="#00fff2" stroke-width="2" opacity="0.5">
+      <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite"/>
+    </path>
+  </g>
+  <!-- Corner accents -->
+  <line x1="16" y1="16" x2="40" y2="16" stroke="#4d7cff" stroke-width="2" opacity="0.6"/>
+  <line x1="16" y1="16" x2="16" y2="40" stroke="#4d7cff" stroke-width="2" opacity="0.6"/>
+  <line x1="152" y1="176" x2="176" y2="176" stroke="#4d7cff" stroke-width="2" opacity="0.6"/>
+  <line x1="176" y1="152" x2="176" y2="176" stroke="#4d7cff" stroke-width="2" opacity="0.6"/>
+</svg>

@@ -1,0 +1,214 @@
+@import "tailwindcss";
+
+/* ===== StormGrid Tron Theme ===== */
+:root {
+  --sg-bg-primary: #0a0a0f;
+  --sg-bg-secondary: #0d0d14;
+  --sg-bg-card: rgba(13, 13, 20, 0.7);
+  --sg-bg-card-hover: rgba(20, 20, 35, 0.8);
+
+  --sg-cyan: #00fff2;
+  --sg-magenta: #ff00ff;
+  --sg-blue: #4d7cff;
+  --sg-amber: #ffb800;
+  --sg-green: #00ff88;
+  --sg-red: #ff3366;
+
+  --sg-text-primary: #e8e8f0;
+  --sg-text-secondary: #8888aa;
+  --sg-text-muted: #555570;
+
+  --sg-border: rgba(0, 255, 242, 0.12);
+  --sg-glow-cyan: 0 0 12px rgba(0, 255, 242, 0.3);
+  --sg-glow-magenta: 0 0 12px rgba(255, 0, 255, 0.3);
+  --sg-glow-blue: 0 0 12px rgba(77, 124, 255, 0.3);
+  --sg-glow-amber: 0 0 12px rgba(255, 184, 0, 0.3);
+
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+
+  --background: var(--sg-bg-primary);
+  --foreground: var(--sg-text-primary);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-sg-cyan: var(--sg-cyan);
+  --color-sg-magenta: var(--sg-magenta);
+  --color-sg-blue: var(--sg-blue);
+  --color-sg-amber: var(--sg-amber);
+  --color-sg-green: var(--sg-green);
+  --color-sg-red: var(--sg-red);
+  --color-sg-text-primary: var(--sg-text-primary);
+  --color-sg-text-secondary: var(--sg-text-secondary);
+  --color-sg-text-muted: var(--sg-text-muted);
+  --color-sg-bg-primary: var(--sg-bg-primary);
+  --color-sg-bg-secondary: var(--sg-bg-secondary);
+  --color-sg-bg-card: var(--sg-bg-card);
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+}
+
+/* Base */
+body {
+  background: var(--sg-bg-primary);
+  color: var(--sg-text-primary);
+  font-family: var(--font-sans);
+  overflow-x: hidden;
+}
+
+/* Grid background overlay */
+.sg-grid-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(0, 255, 242, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 242, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Scanline overlay */
+.sg-scanlines {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.03) 2px,
+    rgba(0, 0, 0, 0.03) 4px
+  );
+}
+
+/* Glassmorphism card */
+.sg-card {
+  background: var(--sg-bg-card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--sg-border);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.sg-card:hover {
+  background: var(--sg-bg-card-hover);
+  border-color: rgba(0, 255, 242, 0.2);
+}
+
+/* Glow border variants */
+.sg-glow-cyan {
+  box-shadow: var(--sg-glow-cyan);
+  border-color: rgba(0, 255, 242, 0.25);
+}
+
+.sg-glow-magenta {
+  box-shadow: var(--sg-glow-magenta);
+  border-color: rgba(255, 0, 255, 0.25);
+}
+
+.sg-glow-blue {
+  box-shadow: var(--sg-glow-blue);
+  border-color: rgba(77, 124, 255, 0.25);
+}
+
+.sg-glow-amber {
+  box-shadow: var(--sg-glow-amber);
+  border-color: rgba(255, 184, 0, 0.25);
+}
+
+/* Pulsing glow animation for live data */
+@keyframes sg-pulse-glow {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+.sg-pulse {
+  animation: sg-pulse-glow 3s ease-in-out infinite;
+}
+
+/* Fade in animation */
+@keyframes sg-fade-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.sg-fade-in {
+  animation: sg-fade-in 0.4s ease-out forwards;
+}
+
+/* Neon text glow */
+.sg-text-glow-cyan {
+  text-shadow: 0 0 10px rgba(0, 255, 242, 0.5), 0 0 20px rgba(0, 255, 242, 0.2);
+}
+
+.sg-text-glow-magenta {
+  text-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.2);
+}
+
+/* Horizontal scroll container */
+.sg-scroll-x {
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 255, 242, 0.2) transparent;
+}
+
+.sg-scroll-x::-webkit-scrollbar {
+  height: 4px;
+}
+
+.sg-scroll-x::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sg-scroll-x::-webkit-scrollbar-thumb {
+  background: rgba(0, 255, 242, 0.2);
+  border-radius: 2px;
+}
+
+/* Stale data indicator */
+.sg-stale {
+  border-color: rgba(255, 184, 0, 0.4) !important;
+}
+
+.sg-stale::after {
+  content: '';
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--sg-amber);
+  animation: sg-pulse-glow 2s ease-in-out infinite;
+}
+
+/* Pull to refresh indicator */
+.sg-pull-indicator {
+  transition: transform 0.2s ease;
+}
+
+/* Collapsible section */
+.sg-collapse-content {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s ease;
+}
+
+.sg-collapse-content[data-open="true"] {
+  grid-template-rows: 1fr;
+}
+
+.sg-collapse-inner {
+  overflow: hidden;
+}
+
+/* Data mono styling */
+.sg-data {
+  font-family: var(--font-mono), 'Courier New', monospace;
+  font-variant-numeric: tabular-nums;
+}
