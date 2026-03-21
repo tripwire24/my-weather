@@ -7,6 +7,7 @@ import {
   uvCategory, windDegToDirection, formatVisibility,
 } from '@/lib/formatters';
 import type { WeatherData } from '@/types/weather';
+import type { ExtraData } from '@/types/extra';
 import type { HeroWidgetId } from '@/hooks/useHeroPreferences';
 
 interface HeroSectionProps {
@@ -17,6 +18,7 @@ interface HeroSectionProps {
   onLocationTap: () => void;
   onCustomize: () => void;
   enabledWidgets: Set<HeroWidgetId>;
+  extraData?: ExtraData | null;
 }
 
 // Smooth count-up: animates from prev value (or 0 on first mount) to target
@@ -50,6 +52,7 @@ export function HeroSection({
   onLocationTap,
   onCustomize,
   enabledWidgets,
+  extraData,
 }: HeroSectionProps) {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit', hour12: true });
@@ -70,7 +73,7 @@ export function HeroSection({
     'dewpoint', 'visibility', 'cloud_cover', 'sunrise_sunset',
   ];
   const activeWidgets = widgetOrder.filter(id => enabledWidgets.has(id));
-  const defs = buildWidgetDefs(data);
+  const defs = buildWidgetDefs(data, extraData);
 
   const handleWidgetTap = (id: HeroWidgetId) => {
     setExpandedWidget(prev => (prev === id ? null : id));
@@ -258,7 +261,7 @@ type WidgetDef = {
   details: React.ReactNode;
 };
 
-function buildWidgetDefs(data: WeatherData): Record<HeroWidgetId, WidgetDef> {
+function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<HeroWidgetId, WidgetDef> {
   const { current, sun, daily, hourly } = data;
   const today = daily[0];
   const uv = uvCategory(current.uvIndex);
@@ -455,6 +458,93 @@ function buildWidgetDefs(data: WeatherData): Record<HeroWidgetId, WidgetDef> {
         </div>
       ),
     },
+
+    // ── Live feed widgets ──────────────────────────────────
+    marine: (() => {
+      const m = extra?.marine;
+      const ready = m && m.available;
+      return {
+        label: 'MARINE',
+        value: ready ? `${m.waveHeight?.toFixed(1)}m` : '—',
+        sub: ready && m.swellDirection != null
+          ? `${windDegToDirection(m.swellDirection)} · ${m.wavePeriod?.toFixed(0)}s`
+          : 'no ocean data',
+        color: 'var(--sg-blue)',
+        details: ready ? (
+          <div className="space-y-3">
+            <PRow label="Wave height" value={`${m.waveHeight?.toFixed(1)} m`} color="var(--sg-blue)" />
+            <PRow label="Wave period" value={`${m.wavePeriod?.toFixed(1)} s`} />
+            <PRow label="Swell height" value={`${m.swellHeight?.toFixed(1)} m`} />
+            <PRow label="Swell period" value={`${m.swellPeriod?.toFixed(1)} s`} />
+            {m.swellDirection != null && (
+              <PRow label="Swell from" value={`${windDegToDirection(m.swellDirection)} (${Math.round(m.swellDirection)}°)`} />
+            )}
+          </div>
+        ) : <div className="sg-label">No marine data for this location.</div>,
+      };
+    })(),
+
+    kp_index: (() => {
+      const sw = extra?.spaceWeather;
+      const auroraLabel = sw
+        ? { none: 'No aurora', low: 'Low aurora', possible: 'Possible', likely: 'Likely', high: 'High aurora' }[sw.auroraChance]
+        : '—';
+      return {
+        label: 'KP INDEX',
+        value: sw ? `${sw.kpIndex.toFixed(1)}` : '—',
+        sub: sw ? sw.kpLabel : 'loading…',
+        color: sw ? (sw.kpIndex < 3 ? 'var(--sg-cyan)' : sw.kpIndex < 5 ? 'var(--sg-amber)' : 'var(--sg-red)') : undefined,
+        details: sw ? (
+          <div className="space-y-3">
+            <PRow label="Kp index" value={sw.kpIndex.toFixed(1)} color="var(--sg-cyan)" />
+            <PRow label="Activity" value={sw.kpLabel} />
+            <PRow label="Aurora" value={auroraLabel} color={sw.kpIndex >= 5 ? 'var(--sg-green)' : undefined} />
+          </div>
+        ) : <div className="sg-label">Space weather data loading…</div>,
+      };
+    })(),
+
+    earthquake: (() => {
+      const quakes = extra?.earthquakes ?? [];
+      const top = quakes[0];
+      return {
+        label: 'SEISMIC',
+        value: top ? `M${top.magnitude.toFixed(1)}` : '—',
+        sub: top ? `${top.distanceKm} km away` : quakes.length === 0 && extra ? 'none nearby' : 'loading…',
+        color: top
+          ? top.magnitude >= 5 ? 'var(--sg-red)' : top.magnitude >= 4 ? 'var(--sg-amber)' : 'var(--sg-green)'
+          : undefined,
+        details: quakes.length > 0 ? (
+          <div className="space-y-3">
+            {quakes.slice(0, 4).map(q => (
+              <div key={q.id}>
+                <PRow label={`M${q.magnitude.toFixed(1)}`} value={`${q.distanceKm} km`} />
+                <div className="sg-label mt-0.5 truncate" style={{ fontSize: '0.58rem' }}>{q.place}</div>
+              </div>
+            ))}
+          </div>
+        ) : <div className="sg-label">No significant seismic activity nearby.</div>,
+      };
+    })(),
+
+    flights: (() => {
+      const fl = extra?.flights;
+      const top = fl?.flights[0];
+      return {
+        label: 'FLIGHTS',
+        value: fl ? `${fl.count}` : '—',
+        sub: top ? `${top.callsign} overhead` : fl ? 'none overhead' : 'loading…',
+        color: 'var(--sg-cyan)',
+        details: fl && fl.count > 0 ? (
+          <div className="space-y-2">
+            <PRow label="Aircraft overhead" value={`${fl.count}`} color="var(--sg-cyan)" />
+            {fl.flights.slice(0, 4).map((f, i) => (
+              <PRow key={i} label={f.callsign} value={`${Math.round(f.altitude * 3.28084 / 1000)}k ft`} />
+            ))}
+          </div>
+        ) : <div className="sg-label">{fl ? 'No aircraft currently overhead.' : 'Flight data loading…'}</div>,
+      };
+    })(),
   };
 }
 

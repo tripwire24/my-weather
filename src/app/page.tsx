@@ -6,9 +6,11 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { useHeroPreferences } from '@/hooks/useHeroPreferences';
 import { useTheme, ThemeMode } from '@/hooks/useTheme';
+import { useExtraData } from '@/hooks/useExtraData';
 import { HeroSection } from '@/components/HeroSection';
 import { HeroCustomizer } from '@/components/HeroCustomizer';
 import { LocationSearch } from '@/components/LocationSearch';
+import { LiveDashboard } from '@/components/LiveDashboard';
 import { HourlyForecast } from '@/components/HourlyForecast';
 import { WeeklyForecast } from '@/components/WeeklyForecast';
 import { WindAtmosphere } from '@/components/WindAtmosphere';
@@ -20,6 +22,8 @@ import { AirQuality } from '@/components/AirQuality';
 import { FeelsLike } from '@/components/FeelsLike';
 import type { Location } from '@/types/weather';
 
+type AppTab = 'weather' | 'live';
+
 const PTR_THRESHOLD = 80;
 
 export default function StormGridApp() {
@@ -27,6 +31,7 @@ export default function StormGridApp() {
   const [manualLocation, setManualLocation] = useState<Location | null>(null);
   const [showLocationSearch, setShowLocationSearch] = useState(false);
   const [showCustomizer, setShowCustomizer] = useState(false);
+  const [activeTab, setActiveTab] = useState<AppTab>('weather');
   const [ptrDistance, setPtrDistance] = useState(0);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -36,6 +41,7 @@ export default function StormGridApp() {
   const { mode: themeMode, setTheme, adaptivePaletteName } = useTheme(data?.current.weatherCode);
 
   useAutoRefresh(refresh, !!activeLocation);
+  const { data: extraData, loading: extraLoading, refresh: refreshExtra } = useExtraData(activeLocation);
 
   const touchStartY = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -159,7 +165,7 @@ export default function StormGridApp() {
           </div>
         )}
 
-        {/* Hero */}
+        {/* Hero — always visible at top on weather tab */}
         {(data || showLoading) && (
           <HeroSection
             data={data}
@@ -169,36 +175,122 @@ export default function StormGridApp() {
             onLocationTap={() => setShowLocationSearch(true)}
             onCustomize={() => setShowCustomizer(true)}
             enabledWidgets={enabledWidgets}
+            extraData={extraData}
           />
         )}
 
-        {/* Detail sections */}
-        {data && (
-          <div className="px-3 pb-8 space-y-2 sg-stagger">
-            <HourlyForecast hourly={data.hourly} />
-            <WeeklyForecast daily={data.daily} />
-            <WindAtmosphere current={data.current} pressureTrend={pressureTrend} />
-            <PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0} />
-            <SunMoon sun={data.sun} moon={data.moon} />
-            <UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon} />
-            <AstronomySeasons astronomy={data.astronomy} dayLength={data.sun.dayLength} />
-            {data.airQuality && <AirQuality airQuality={data.airQuality} />}
-            <FeelsLike current={data.current} />
-          </div>
+        {/* Weather tab content */}
+        {activeTab === 'weather' && (
+          <>
+            {data && (
+              <div className="px-3 pb-24 space-y-2 sg-stagger">
+                <HourlyForecast hourly={data.hourly} />
+                <WeeklyForecast daily={data.daily} />
+                <WindAtmosphere current={data.current} pressureTrend={pressureTrend} />
+                <PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0} />
+                <SunMoon sun={data.sun} moon={data.moon} />
+                <UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon} />
+                <AstronomySeasons astronomy={data.astronomy} dayLength={data.sun.dayLength} />
+                {data.airQuality && <AirQuality airQuality={data.airQuality} />}
+                <FeelsLike current={data.current} />
+              </div>
+            )}
+            {showLoading && (
+              <div className="px-3 pb-24 space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="sg-card sg-card-cyan p-4" style={{ height: '56px' }}>
+                    <div className="sg-skeleton h-4 w-32 rounded mb-2" />
+                    <div className="sg-skeleton h-3 w-48 rounded" />
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
         )}
 
-        {/* Loading skeletons */}
-        {showLoading && (
-          <div className="px-3 pb-8 space-y-2">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="sg-card sg-card-cyan p-4" style={{ height: '56px' }}>
-                <div className="sg-skeleton h-4 w-32 rounded mb-2" />
-                <div className="sg-skeleton h-3 w-48 rounded" />
-              </div>
-            ))}
-          </div>
+        {/* Live feed tab */}
+        {activeTab === 'live' && activeLocation && (
+          <LiveDashboard
+            data={extraData}
+            loading={extraLoading}
+            onRefresh={refreshExtra}
+          />
+        )}
+        {activeTab === 'live' && !activeLocation && (
+          <div className="px-4 py-8 text-center sg-label">Set a location to see live data.</div>
         )}
       </div>
+
+      {/* Bottom tab bar */}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-50 flex"
+        style={{
+          background: 'rgba(8,10,28,0.96)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(0,255,242,0.12)',
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+        }}
+      >
+        {([
+          {
+            id: 'weather' as AppTab,
+            label: 'WEATHER',
+            icon: (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <circle cx="9" cy="9" r="4" stroke="currentColor" strokeWidth={1.4} />
+                <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.22 3.22l1.42 1.42M13.36 13.36l1.42 1.42M3.22 14.78l1.42-1.42M13.36 4.64l1.42-1.42" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" />
+              </svg>
+            ),
+          },
+          {
+            id: 'live' as AppTab,
+            label: 'LIVE',
+            icon: (
+              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+                <path d="M1 9c2-4 4-6 6-6s4 2 4 6-2 6-4 6" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" />
+                <path d="M13 5c2 1 3 2.5 3 4s-1 3-3 4" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" />
+                <circle cx="7" cy="9" r="1.5" fill="currentColor" />
+                <path d="M1 14h4M15 4l-2 2M15 14l-2-2" stroke="currentColor" strokeWidth={1.1} strokeLinecap="round" opacity={0.5} />
+              </svg>
+            ),
+          },
+        ] as { id: AppTab; label: string; icon: React.ReactNode }[]).map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className="relative flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-all active:opacity-70"
+            style={{ color: activeTab === tab.id ? 'var(--sg-cyan)' : 'var(--sg-text-muted)' }}
+            aria-label={tab.label}
+          >
+            <div style={{ filter: activeTab === tab.id ? 'drop-shadow(0 0 4px var(--sg-cyan))' : 'none' }}>
+              {tab.icon}
+            </div>
+            <span
+              className="sg-mono"
+              style={{
+                fontSize: '0.58rem',
+                letterSpacing: '0.1em',
+                fontWeight: activeTab === tab.id ? 700 : 400,
+              }}
+            >
+              {tab.label}
+            </span>
+            {activeTab === tab.id && (
+              <div
+                className="absolute bottom-0"
+                style={{
+                  width: '24px',
+                  height: '2px',
+                  background: 'var(--sg-cyan)',
+                  boxShadow: '0 0 8px var(--sg-cyan)',
+                  borderRadius: '2px 2px 0 0',
+                }}
+              />
+            )}
+          </button>
+        ))}
+      </nav>
 
       {/* Modals */}
       {showLocationSearch && (

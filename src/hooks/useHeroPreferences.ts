@@ -11,7 +11,12 @@ export type HeroWidgetId =
   | 'visibility'
   | 'precip_prob'
   | 'cloud_cover'
-  | 'sunrise_sunset';
+  | 'sunrise_sunset'
+  // Live feed widgets
+  | 'marine'
+  | 'kp_index'
+  | 'earthquake'
+  | 'flights';
 
 export interface HeroWidget {
   id: HeroWidgetId;
@@ -30,6 +35,11 @@ export const HERO_WIDGETS: HeroWidget[] = [
   { id: 'precip_prob',  label: 'Rain Chance',        description: 'Precipitation probability', defaultEnabled: true },
   { id: 'cloud_cover',  label: 'Cloud Cover',        description: 'Cloud coverage %',        defaultEnabled: false },
   { id: 'sunrise_sunset', label: 'Sunrise / Sunset', description: 'Today\'s sun times',     defaultEnabled: true },
+  // Live feed widgets
+  { id: 'marine',     label: 'Marine',        description: 'Wave height & swell',       defaultEnabled: false },
+  { id: 'kp_index',   label: 'Space Weather', description: 'Kp index & aurora chance',  defaultEnabled: false },
+  { id: 'earthquake', label: 'Seismic',       description: 'Nearby earthquake activity', defaultEnabled: false },
+  { id: 'flights',    label: 'Flights',       description: 'Aircraft overhead count',    defaultEnabled: false },
 ];
 
 const STORAGE_KEY = 'sg_hero_widgets';
