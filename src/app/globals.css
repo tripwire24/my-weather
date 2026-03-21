@@ -328,6 +328,13 @@ body {
   to { opacity: 1; transform: translateY(0); }
 }
 
+/* Metric value snap-in — scale pop + brief brightness flare */
+@keyframes sg-metric-in {
+  0%   { opacity: 0; transform: scale(0.75) translateY(3px); filter: brightness(2.5); }
+  55%  { transform: scale(1.06) translateY(-1px); filter: brightness(1.6); }
+  100% { opacity: 1; transform: scale(1) translateY(0); filter: brightness(1); }
+}
+
 /* Subtle border pulse for interactive widgets */
 @keyframes sg-widget-alive {
   0%, 100% { border-color: rgba(0, 255, 242, 0.1); }
@@ -355,6 +362,7 @@ body {
 .sg-animate-float { animation: sg-float 4s ease-in-out infinite; }
 .sg-animate-expand-in { animation: sg-expand-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 .sg-animate-slide-up { animation: sg-slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
+.sg-animate-metric-in { animation: sg-metric-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
 /* Staggered fade-in */
 .sg-stagger > * {
@@ -382,7 +390,7 @@ body {
   transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
               box-shadow 0.2s ease,
               border-color 0.2s ease;
-  animation: sg-widget-alive 5s ease-in-out infinite;
+  /* animation managed inline for stagger control */
   -webkit-tap-highlight-color: transparent;
   will-change: transform;
 }
@@ -428,14 +436,13 @@ body {
     inset 0 0 15px rgba(0, 255, 242, 0.08);
 }
 
-/* Expanded state */
+/* Expanded/active state — animation managed inline */
 .sg-widget-expanded {
   border-color: rgba(0, 255, 242, 0.4) !important;
   box-shadow:
     0 0 0 1px rgba(0, 255, 242, 0.3),
     0 0 24px rgba(0, 255, 242, 0.18),
     inset 0 0 20px rgba(0, 255, 242, 0.06) !important;
-  animation: sg-light-pulse 3s ease-in-out infinite;
 }
 
 /* ============================

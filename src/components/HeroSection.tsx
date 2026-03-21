@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { WeatherIcon } from '@/components/ui/WeatherIcon';
 import {
   formatTemp, formatTime, formatRelativeTime, wmoLabel,
@@ -19,6 +19,29 @@ interface HeroSectionProps {
   enabledWidgets: Set<HeroWidgetId>;
 }
 
+// Smooth count-up: animates from prev value (or 0 on first mount) to target
+function useCountUp(target: number, duration = 950): number {
+  const [val, setVal] = useState(0);
+  const prevRef = useRef<number | null>(null);
+  useEffect(() => {
+    const from = prevRef.current ?? 0;
+    prevRef.current = target;
+    if (from === target) { setVal(target); return; }
+    let rafId: number;
+    let start: number | null = null;
+    const step = (ts: number) => {
+      if (start === null) start = ts;
+      const p = Math.min((ts - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - p, 3); // cubic ease-out
+      setVal(Math.round(from + (target - from) * eased));
+      if (p < 1) rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, [target, duration]);
+  return val;
+}
+
 export function HeroSection({
   data,
   loading,
@@ -31,6 +54,8 @@ export function HeroSection({
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit', hour12: true });
   const [expandedWidget, setExpandedWidget] = useState<HeroWidgetId | null>(null);
+  // Hook must be called unconditionally — passes 0 until data arrives
+  const displayTemp = useCountUp(data ? Math.round(data.current.temperature) : 0);
 
   if (loading && !data) return <HeroSkeleton />;
   if (!data) return null;
@@ -109,7 +134,7 @@ export function HeroSection({
               className="sg-mono font-bold leading-none sg-glow-cyan"
               style={{ fontSize: 'clamp(3.8rem, 18vw, 5.5rem)', color: 'var(--sg-cyan)' }}
             >
-              {Math.round(current.temperature)}
+              {displayTemp}
             </span>
             <span
               className="sg-mono font-light mt-2"
@@ -173,6 +198,7 @@ export function HeroSection({
               isActive={expandedWidget === id}
               onTap={() => handleWidgetTap(id)}
               sheenDelay={`${i * 0.7}s`}
+              entranceIndex={i}
             />
           ))}
         </div>
@@ -440,12 +466,16 @@ function HeroWidget({
   isActive,
   onTap,
   sheenDelay,
+  entranceIndex,
 }: {
   def: WidgetDef;
   isActive: boolean;
   onTap: () => void;
   sheenDelay: string;
+  entranceIndex: number;
 }) {
+  const delay = entranceIndex * 55; // ms stagger between tiles
+
   return (
     <div
       className="sg-widget-shiny flex flex-col rounded-lg"
@@ -456,6 +486,15 @@ function HeroWidget({
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
         boxShadow: isActive ? '0 0 0 1px rgba(0,255,242,0.2), 0 0 16px rgba(0,255,242,0.12)' : undefined,
         '--sheen-delay': sheenDelay,
+        // Staggered entrance, then persistent border pulse; active overrides with glow pulse
+        animationName: isActive
+          ? 'sg-light-pulse'
+          : 'sg-fade-in, sg-widget-alive',
+        animationDuration: isActive ? '3s' : '0.35s, 5s',
+        animationTimingFunction: isActive ? 'ease-in-out' : 'ease-out, ease-in-out',
+        animationDelay: isActive ? '0s' : `${delay}ms, ${delay + 420}ms`,
+        animationIterationCount: isActive ? 'infinite' : '1, infinite',
+        animationFillMode: isActive ? 'none' : 'backwards, none',
       } as React.CSSProperties}
       onClick={onTap}
       role="button"
@@ -480,7 +519,8 @@ function HeroWidget({
         </div>
         <div>
           <span
-            className="sg-mono font-semibold leading-tight block mt-1"
+            key={def.value}
+            className="sg-mono font-semibold leading-tight block mt-1 sg-animate-metric-in"
             style={{ fontSize: '0.92rem', color: def.color ?? 'var(--sg-text-primary)' }}
           >
             {def.value}
