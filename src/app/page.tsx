@@ -130,7 +130,7 @@ export default function StormGridApp() {
             <button
               onClick={refresh}
               disabled={loading}
-              className="flex items-center justify-center w-7 h-7 rounded-lg transition-all active:opacity-70"
+              className="flex items-center justify-center w-9 h-9 rounded-lg transition-all active:opacity-70 active:scale-95"
               style={{ border: '1px solid rgba(0,255,242,0.2)', color: 'var(--sg-cyan)' }}
               aria-label="Refresh"
             >

@@ -322,6 +322,12 @@ body {
   to { opacity: 1; transform: scaleY(1) translateY(0); }
 }
 
+/* Widget popover slide up */
+@keyframes sg-slide-up {
+  from { opacity: 0; transform: translateY(100%); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 /* Subtle border pulse for interactive widgets */
 @keyframes sg-widget-alive {
   0%, 100% { border-color: rgba(0, 255, 242, 0.1); }
@@ -348,6 +354,7 @@ body {
 .sg-animate-light-pulse { animation: sg-light-pulse 4s ease-in-out infinite; }
 .sg-animate-float { animation: sg-float 4s ease-in-out infinite; }
 .sg-animate-expand-in { animation: sg-expand-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+.sg-animate-slide-up { animation: sg-slide-up 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards; }
 
 /* Staggered fade-in */
 .sg-stagger > * {
@@ -439,7 +446,7 @@ body {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 3px 7px;
+  padding: 6px 9px;
   border-radius: 5px;
   font-size: 0.62rem;
   font-family: 'JetBrains Mono', monospace;
