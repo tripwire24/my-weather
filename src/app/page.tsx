@@ -5,6 +5,7 @@ import { useWeatherData } from '@/hooks/useWeatherData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
 import { useHeroPreferences } from '@/hooks/useHeroPreferences';
+import { useTheme, ThemeMode } from '@/hooks/useTheme';
 import { HeroSection } from '@/components/HeroSection';
 import { HeroCustomizer } from '@/components/HeroCustomizer';
 import { LocationSearch } from '@/components/LocationSearch';
@@ -32,6 +33,7 @@ export default function StormGridApp() {
   const activeLocation = manualLocation ?? geoLocation;
   const { data, loading, error, isStale, lastUpdated, refresh } = useWeatherData(activeLocation);
   const { enabled: enabledWidgets, toggle: toggleWidget } = useHeroPreferences();
+  const { mode: themeMode, setTheme, adaptivePaletteName } = useTheme(data?.current.weatherCode);
 
   useAutoRefresh(refresh, !!activeLocation);
 
@@ -110,21 +112,36 @@ export default function StormGridApp() {
             <span className="sg-mono text-xs font-bold" style={{ color: 'var(--sg-cyan)', letterSpacing: '0.2em' }}>
               STORMGRID
             </span>
+            {themeMode === 'adaptive' && adaptivePaletteName && (
+              <span
+                className="sg-mono hidden sm:inline"
+                style={{ fontSize: '0.55rem', color: 'var(--sg-text-muted)', letterSpacing: '0.1em' }}
+              >
+                · {adaptivePaletteName.toUpperCase()}
+              </span>
+            )}
           </div>
-          <button
-            onClick={refresh}
-            disabled={loading}
-            className="flex items-center justify-center w-7 h-7 rounded-lg transition-all active:opacity-70"
-            style={{ border: '1px solid rgba(0,255,242,0.2)', color: 'var(--sg-cyan)' }}
-            aria-label="Refresh"
-          >
-            <svg width="13" height="13" viewBox="0 0 13 13" fill="none"
-              style={{ animation: loading ? 'sg-rotate 1s linear infinite' : 'none' }}
+
+          <div className="flex items-center gap-1.5">
+            {/* Theme toggle group */}
+            <ThemeToggle current={themeMode} onChange={setTheme} />
+
+            {/* Refresh button */}
+            <button
+              onClick={refresh}
+              disabled={loading}
+              className="flex items-center justify-center w-7 h-7 rounded-lg transition-all active:opacity-70"
+              style={{ border: '1px solid rgba(0,255,242,0.2)', color: 'var(--sg-cyan)' }}
+              aria-label="Refresh"
             >
-              <path d="M11 2.5A5.5 5.5 0 0 0 1 6.5M2 10.5A5.5 5.5 0 0 0 12 6.5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" />
-              <path d="M11 2.5V5.5H8M2 10.5V7.5H5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
+              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"
+                style={{ animation: loading ? 'sg-rotate 1s linear infinite' : 'none' }}
+              >
+                <path d="M11 2.5A5.5 5.5 0 0 0 1 6.5M2 10.5A5.5 5.5 0 0 0 12 6.5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" />
+                <path d="M11 2.5V5.5H8M2 10.5V7.5H5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* States */}
@@ -198,6 +215,63 @@ export default function StormGridApp() {
           onClose={() => setShowCustomizer(false)}
         />
       )}
+    </div>
+  );
+}
+
+// Theme toggle — 3-way: dark / light / adaptive
+function ThemeToggle({ current, onChange }: { current: ThemeMode; onChange: (m: ThemeMode) => void }) {
+  const modes: { id: ThemeMode; label: string; icon: React.ReactNode }[] = [
+    {
+      id: 'dark',
+      label: 'DARK',
+      icon: (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M8.5 6.5A4 4 0 0 1 3.5 1.5a4 4 0 1 0 5 5z" fill="currentColor" />
+        </svg>
+      ),
+    },
+    {
+      id: 'light',
+      label: 'LIGHT',
+      icon: (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <circle cx="5" cy="5" r="2" fill="currentColor" />
+          <path d="M5 1v1M5 8v1M1 5h1M8 5h1M2.5 2.5l.7.7M6.8 6.8l.7.7M2.5 7.5l.7-.7M6.8 3.2l.7-.7" stroke="currentColor" strokeWidth={0.9} strokeLinecap="round" />
+        </svg>
+      ),
+    },
+    {
+      id: 'adaptive',
+      label: 'AUTO',
+      icon: (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth={1} />
+          <path d="M5 1.5v7M1.5 5h7" stroke="currentColor" strokeWidth={0.9} strokeLinecap="round" opacity={0.5} />
+          <path d="M3 2.5C3 4 5 4.5 5 5s-2 1-2 2.5" stroke="currentColor" strokeWidth={0.9} fill="none" strokeLinecap="round" />
+        </svg>
+      ),
+    },
+  ];
+
+  return (
+    <div
+      className="flex items-center rounded-md overflow-hidden"
+      style={{ border: '1px solid rgba(0,255,242,0.15)', gap: 0 }}
+    >
+      {modes.map(({ id, label, icon }) => (
+        <button
+          key={id}
+          onClick={() => onChange(id)}
+          className={`sg-theme-btn${current === id ? ' active' : ''}`}
+          style={{ borderRadius: 0, border: 'none', borderRight: id !== 'adaptive' ? '1px solid rgba(0,255,242,0.1)' : 'none' }}
+          aria-label={`${label} theme`}
+          title={`${label} mode`}
+        >
+          {icon}
+          <span className="hidden xs:inline">{label}</span>
+        </button>
+      ))}
     </div>
   );
 }

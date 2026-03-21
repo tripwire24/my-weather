@@ -36,8 +36,11 @@ export function SunMoon({ sun, moon }: SunMoonProps) {
             sunrise={sun.sunrise}
             sunset={sun.sunset}
             position={sun.currentPosition}
-            width={280}
-            height={90}
+            goldenHourMorningEnd={sun.goldenHourMorningEnd}
+            goldenHourEveningStart={sun.goldenHourEveningStart}
+            solarNoon={sun.solarNoon}
+            width={300}
+            height={120}
           />
         </div>
       </div>

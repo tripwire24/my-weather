@@ -9,7 +9,7 @@
 }
 
 /* ============================
-   STORMGRID — TRON THEME VARS
+   STORMGRID — DARK THEME (default)
    ============================ */
 :root {
   /* Core palette */
@@ -53,6 +53,79 @@
   /* Card backdrop */
   --sg-glass-bg: rgba(8, 12, 30, 0.7);
   --sg-glass-blur: 12px;
+
+  /* Scanlines opacity */
+  --sg-scanline-alpha: 0.06;
+
+  /* Widget flare color */
+  --sg-flare-color: rgba(255, 255, 255, 0.08);
+
+  /* Sheen edge color */
+  --sg-sheen-color: rgba(255, 255, 255, 0.12);
+}
+
+/* ============================
+   LIGHT THEME
+   ============================ */
+[data-theme="light"] {
+  --sg-bg: #f0f4ff;
+  --sg-bg-secondary: #e4eaf8;
+  --sg-bg-card: rgba(255, 255, 255, 0.8);
+  --sg-glass-bg: rgba(235, 240, 255, 0.88);
+  --sg-glass-blur: 14px;
+
+  --sg-cyan: #0077cc;
+  --sg-cyan-dim: rgba(0, 119, 204, 0.6);
+  --sg-cyan-glow: rgba(0, 119, 204, 0.12);
+  --sg-magenta: #b800cc;
+  --sg-magenta-dim: rgba(184, 0, 204, 0.6);
+  --sg-magenta-glow: rgba(184, 0, 204, 0.12);
+  --sg-blue: #3355cc;
+  --sg-blue-dim: rgba(51, 85, 204, 0.6);
+  --sg-blue-glow: rgba(51, 85, 204, 0.12);
+  --sg-amber: #cc7700;
+  --sg-amber-glow: rgba(204, 119, 0, 0.12);
+  --sg-green: #007744;
+  --sg-red: #cc2244;
+
+  --sg-text-primary: #1a2040;
+  --sg-text-secondary: #4a5a80;
+  --sg-text-muted: #8898bb;
+
+  --sg-border: rgba(51, 85, 204, 0.2);
+  --sg-border-bright: rgba(51, 85, 204, 0.5);
+
+  --sg-glow-cyan: 0 0 8px rgba(0, 119, 204, 0.25), 0 0 16px rgba(0, 119, 204, 0.1);
+  --sg-glow-magenta: 0 0 8px rgba(184, 0, 204, 0.25), 0 0 16px rgba(184, 0, 204, 0.1);
+  --sg-glow-blue: 0 0 8px rgba(51, 85, 204, 0.25), 0 0 16px rgba(51, 85, 204, 0.1);
+  --sg-glow-amber: 0 0 8px rgba(204, 119, 0, 0.25), 0 0 16px rgba(204, 119, 0, 0.1);
+
+  --sg-grid-color: rgba(51, 85, 204, 0.04);
+  --sg-scanline-alpha: 0.02;
+
+  --sg-flare-color: rgba(255, 255, 255, 0.5);
+  --sg-sheen-color: rgba(255, 255, 255, 0.7);
+}
+
+[data-theme="light"] body,
+[data-theme="light"] html {
+  background: var(--sg-bg);
+  color: var(--sg-text-primary);
+}
+
+[data-theme="light"] .sg-glow-cyan {
+  text-shadow: 0 0 6px rgba(0, 119, 204, 0.5), 0 0 12px rgba(0, 119, 204, 0.25);
+}
+[data-theme="light"] .sg-glow-amber {
+  text-shadow: 0 0 6px rgba(204, 119, 0, 0.5), 0 0 12px rgba(204, 119, 0, 0.25);
+}
+
+/* ============================
+   ADAPTIVE THEME (applied via JS, inline vars on root)
+   ============================ */
+[data-theme="adaptive"] {
+  /* Base vars — overridden dynamically by JS */
+  transition: background 1.5s ease, color 1s ease;
 }
 
 /* ============================
@@ -110,8 +183,8 @@ body {
     0deg,
     transparent,
     transparent 2px,
-    rgba(0, 0, 0, 0.06) 2px,
-    rgba(0, 0, 0, 0.06) 4px
+    rgba(0, 0, 0, var(--sg-scanline-alpha, 0.06)) 2px,
+    rgba(0, 0, 0, var(--sg-scanline-alpha, 0.06)) 4px
   );
 }
 
@@ -215,11 +288,66 @@ body {
   to { transform: rotate(360deg); }
 }
 
+/* Light pulse — soft radial heartbeat */
+@keyframes sg-light-pulse {
+  0%, 100% {
+    box-shadow:
+      0 0 0 0 rgba(0, 255, 242, 0),
+      inset 0 0 0 0 rgba(0, 255, 242, 0);
+  }
+  40% {
+    box-shadow:
+      0 0 18px 2px rgba(0, 255, 242, 0.18),
+      inset 0 0 12px 0 rgba(0, 255, 242, 0.06);
+  }
+}
+
+/* Sheen sweep — diagonal flash across a surface */
+@keyframes sg-sheen-sweep {
+  0% { transform: translateX(-100%) skewX(-20deg); opacity: 0; }
+  10% { opacity: 1; }
+  60% { opacity: 0.6; }
+  100% { transform: translateX(350%) skewX(-20deg); opacity: 0; }
+}
+
+/* Edge flare — brief bright edge flash */
+@keyframes sg-edge-flare {
+  0%, 100% { opacity: 0; }
+  5%, 95% { opacity: 1; }
+}
+
+/* Widget expand */
+@keyframes sg-expand-in {
+  from { opacity: 0; transform: scaleY(0.95) translateY(-4px); }
+  to { opacity: 1; transform: scaleY(1) translateY(0); }
+}
+
+/* Subtle border pulse for interactive widgets */
+@keyframes sg-widget-alive {
+  0%, 100% { border-color: rgba(0, 255, 242, 0.1); }
+  50% { border-color: rgba(0, 255, 242, 0.28); }
+}
+
+/* Float up subtle drift */
+@keyframes sg-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+/* Sun ray pulse */
+@keyframes sg-sun-pulse {
+  0%, 100% { opacity: 0.5; r: 7; }
+  50% { opacity: 1; r: 10; }
+}
+
 .sg-animate-pulse-glow { animation: sg-pulse-glow 3s ease-in-out infinite; }
 .sg-animate-pulse-border { animation: sg-pulse-border 2s ease-in-out infinite; }
 .sg-animate-fade-in { animation: sg-fade-in 0.4s ease-out forwards; }
 .sg-animate-spin-slow { animation: sg-spin-slow 20s linear infinite; }
 .sg-animate-data-blink { animation: sg-data-blink 4s ease-in-out infinite; }
+.sg-animate-light-pulse { animation: sg-light-pulse 4s ease-in-out infinite; }
+.sg-animate-float { animation: sg-float 4s ease-in-out infinite; }
+.sg-animate-expand-in { animation: sg-expand-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
 /* Staggered fade-in */
 .sg-stagger > * {
@@ -236,6 +364,106 @@ body {
 .sg-stagger > *:nth-child(8) { animation-delay: 0.40s; }
 .sg-stagger > *:nth-child(9) { animation-delay: 0.45s; }
 .sg-stagger > *:nth-child(10) { animation-delay: 0.50s; }
+
+/* ============================
+   SHINY WIDGET — interactive tile with flare + edge glow
+   ============================ */
+.sg-widget-shiny {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.2s ease,
+              border-color 0.2s ease;
+  animation: sg-widget-alive 5s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+}
+
+/* Sheen pseudo-element */
+.sg-widget-shiny::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: 0;
+  width: 40%;
+  height: 200%;
+  background: linear-gradient(
+    105deg,
+    transparent 30%,
+    var(--sg-sheen-color, rgba(255,255,255,0.1)) 50%,
+    transparent 70%
+  );
+  pointer-events: none;
+  animation: sg-sheen-sweep 6s ease-in-out infinite;
+  animation-delay: var(--sheen-delay, 0s);
+}
+
+/* Corner flare — top-right */
+.sg-widget-shiny::after {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 2px;
+  height: 60%;
+  background: linear-gradient(to bottom, var(--sg-cyan), transparent);
+  border-radius: 0 0 2px 2px;
+  opacity: 0.5;
+  animation: sg-pulse-glow 3s ease-in-out infinite;
+  animation-delay: var(--sheen-delay, 0s);
+}
+
+.sg-widget-shiny:active {
+  transform: scale(0.96);
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 242, 0.5),
+    0 0 20px rgba(0, 255, 242, 0.25),
+    inset 0 0 15px rgba(0, 255, 242, 0.08);
+}
+
+/* Expanded state */
+.sg-widget-expanded {
+  border-color: rgba(0, 255, 242, 0.4) !important;
+  box-shadow:
+    0 0 0 1px rgba(0, 255, 242, 0.3),
+    0 0 24px rgba(0, 255, 242, 0.18),
+    inset 0 0 20px rgba(0, 255, 242, 0.06) !important;
+  animation: sg-light-pulse 3s ease-in-out infinite;
+}
+
+/* ============================
+   THEME TOGGLE BUTTON
+   ============================ */
+.sg-theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 3px 7px;
+  border-radius: 5px;
+  font-size: 0.62rem;
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.06em;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  background: transparent;
+  color: var(--sg-text-muted);
+}
+
+.sg-theme-btn.active {
+  background: rgba(0, 255, 242, 0.1);
+  border-color: rgba(0, 255, 242, 0.35);
+  color: var(--sg-cyan);
+  box-shadow: 0 0 8px rgba(0, 255, 242, 0.2);
+}
+
+[data-theme="light"] .sg-theme-btn.active {
+  background: rgba(0, 119, 204, 0.1);
+  border-color: rgba(0, 119, 204, 0.35);
+  color: var(--sg-cyan);
+  box-shadow: 0 0 8px rgba(0, 119, 204, 0.2);
+}
 
 /* ============================
    DIVIDERS / HR

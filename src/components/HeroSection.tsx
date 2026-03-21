@@ -1,7 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { WeatherIcon } from '@/components/ui/WeatherIcon';
-import { formatTemp, formatTime, formatRelativeTime, wmoLabel, uvCategory, windDegToDirection, formatWindSpeed, formatVisibility } from '@/lib/formatters';
+import {
+  formatTemp, formatTime, formatRelativeTime, wmoLabel,
+  uvCategory, windDegToDirection, formatWindSpeed, formatVisibility,
+} from '@/lib/formatters';
 import type { WeatherData } from '@/types/weather';
 import type { HeroWidgetId } from '@/hooks/useHeroPreferences';
 
@@ -26,6 +30,7 @@ export function HeroSection({
 }: HeroSectionProps) {
   const now = new Date();
   const timeStr = now.toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit', hour12: true });
+  const [expandedWidget, setExpandedWidget] = useState<HeroWidgetId | null>(null);
 
   if (loading && !data) return <HeroSkeleton />;
   if (!data) return null;
@@ -35,19 +40,22 @@ export function HeroSection({
   const uv = uvCategory(current.uvIndex);
   const hasAlert = current.uvIndex >= 8 || current.windGusts > 80;
 
-  // Build enabled widgets list in display order
   const widgetOrder: HeroWidgetId[] = [
     'wind', 'humidity', 'uv', 'precip_prob', 'pressure',
     'dewpoint', 'visibility', 'cloud_cover', 'sunrise_sunset',
   ];
   const activeWidgets = widgetOrder.filter(id => enabledWidgets.has(id));
 
+  const handleWidgetTap = (id: HeroWidgetId) => {
+    setExpandedWidget(prev => (prev === id ? null : id));
+  };
+
   return (
     <div className="relative px-4 pt-safe-top pb-2 sg-animate-fade-in">
-      {/* Background glow */}
+      {/* Background radial glow — light pulse */}
       <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,242,0.06) 0%, transparent 70%)' }}
+        className="absolute inset-0 pointer-events-none sg-animate-light-pulse"
+        style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,242,0.07) 0%, transparent 70%)', borderRadius: '0 0 40% 40%' }}
       />
 
       {/* Top row: location + time + customize */}
@@ -75,7 +83,6 @@ export function HeroSection({
               <div className="sg-label">{formatRelativeTime(lastUpdated)}</div>
             )}
           </div>
-          {/* Customize button */}
           <button
             onClick={onCustomize}
             className="mt-0.5 flex items-center justify-center w-6 h-6 rounded-md transition-all active:opacity-70"
@@ -95,7 +102,6 @@ export function HeroSection({
       {/* Main temp row */}
       <div className="flex items-end gap-4 mt-2">
         <div className="flex-1">
-          {/* Big temperature */}
           <div className="flex items-start gap-1">
             <span
               className="sg-mono font-bold leading-none sg-glow-cyan"
@@ -111,7 +117,6 @@ export function HeroSection({
             </span>
           </div>
 
-          {/* Feels like */}
           <div className="flex items-center gap-2 -mt-1">
             <span className="sg-label">FEELS</span>
             <span className="sg-mono text-xs text-[var(--sg-text-secondary)]">
@@ -119,23 +124,23 @@ export function HeroSection({
             </span>
           </div>
 
-          {/* Condition */}
           <div className="flex items-center gap-2 mt-1.5">
-            <WeatherIcon code={current.weatherCode} isDay={current.isDay} size={18} color="#00fff2" />
+            <WeatherIcon code={current.weatherCode} isDay={current.isDay} size={18} color="var(--sg-cyan)" />
             <span className="text-sm text-[var(--sg-text-secondary)]">
               {wmoLabel(current.weatherCode)}
             </span>
           </div>
         </div>
 
-        {/* Right column: hi/lo + icon */}
         <div className="flex flex-col items-end gap-2">
-          <WeatherIcon
-            code={current.weatherCode}
-            isDay={current.isDay}
-            size={60}
-            color="#00fff2"
-          />
+          <div className="sg-animate-float">
+            <WeatherIcon
+              code={current.weatherCode}
+              isDay={current.isDay}
+              size={60}
+              color="var(--sg-cyan)"
+            />
+          </div>
           {today && (
             <div className="flex items-center gap-3">
               <div className="text-center">
@@ -159,8 +164,15 @@ export function HeroSection({
       {/* Customisable widget tiles */}
       {activeWidgets.length > 0 && (
         <div className="mt-3 grid grid-cols-3 gap-1.5 sm:grid-cols-4">
-          {activeWidgets.map(id => (
-            <HeroWidget key={id} id={id} data={data} />
+          {activeWidgets.map((id, i) => (
+            <HeroWidget
+              key={id}
+              id={id}
+              data={data}
+              isExpanded={expandedWidget === id}
+              onTap={() => handleWidgetTap(id)}
+              sheenDelay={`${i * 0.7}s`}
+            />
           ))}
         </div>
       )}
@@ -200,11 +212,94 @@ export function HeroSection({
   );
 }
 
-// Individual hero widget tile
-function HeroWidget({ id, data }: { id: HeroWidgetId; data: WeatherData }) {
-  const { current, sun, daily } = data;
+// ──────────────────────────────────────────────────────────
+//  Individual hero widget tile — interactive + expandable
+// ──────────────────────────────────────────────────────────
+function HeroWidget({
+  id,
+  data,
+  isExpanded,
+  onTap,
+  sheenDelay,
+}: {
+  id: HeroWidgetId;
+  data: WeatherData;
+  isExpanded: boolean;
+  onTap: () => void;
+  sheenDelay: string;
+}) {
+  const { current, sun, daily, hourly } = data;
+  const today = daily[0];
 
-  type WidgetDef = { label: string; value: string; sub?: string; color?: string };
+  type WidgetDef = {
+    label: string;
+    value: string;
+    sub?: string;
+    color?: string;
+    icon?: React.ReactNode;
+    details: React.ReactNode;
+  };
+
+  const uv = uvCategory(current.uvIndex);
+
+  // Beaufort scale
+  const beaufort = (spd: number): string => {
+    if (spd < 1) return 'Calm';
+    if (spd < 6) return 'Light air';
+    if (spd < 12) return 'Light breeze';
+    if (spd < 20) return 'Gentle breeze';
+    if (spd < 29) return 'Moderate breeze';
+    if (spd < 39) return 'Fresh breeze';
+    if (spd < 50) return 'Strong breeze';
+    if (spd < 62) return 'Near gale';
+    if (spd < 75) return 'Gale';
+    if (spd < 89) return 'Strong gale';
+    if (spd < 103) return 'Storm';
+    return 'Violent storm';
+  };
+
+  // Pressure interpretation
+  const pressureHint = (p: number): string => {
+    if (p > 1022) return 'High — fair weather likely';
+    if (p > 1009) return 'Normal — stable conditions';
+    if (p > 995) return 'Low — unsettled weather';
+    return 'Very low — stormy conditions';
+  };
+
+  // Dew point comfort
+  const dewPointLabel = (dp: number): string => {
+    if (dp < 10) return 'Dry & comfortable';
+    if (dp < 15) return 'Comfortable';
+    if (dp < 18) return 'Slightly humid';
+    if (dp < 21) return 'Quite humid';
+    if (dp < 24) return 'Oppressively humid';
+    return 'Extremely humid';
+  };
+
+  // Cloud type estimate
+  const cloudTypeLabel = (cc: number): string => {
+    if (cc < 10) return 'Clear sky';
+    if (cc < 30) return 'Few clouds';
+    if (cc < 55) return 'Partly cloudy';
+    if (cc < 80) return 'Mostly cloudy';
+    return 'Overcast';
+  };
+
+  // Next few hours precip probabilities
+  const nextHours = hourly
+    .filter(h => new Date(h.time) > new Date())
+    .slice(0, 6);
+
+  // UV exposure time in minutes (WHO guidelines)
+  const uvExposureMin = (): string => {
+    const idx = current.uvIndex;
+    if (idx < 1) return 'No limit';
+    if (idx < 3) return '> 60 min';
+    if (idx < 6) return '30–60 min';
+    if (idx < 8) return '20–30 min';
+    if (idx < 11) return '< 20 min';
+    return '< 10 min';
+  };
 
   const defs: Record<HeroWidgetId, WidgetDef> = {
     wind: {
@@ -212,49 +307,141 @@ function HeroWidget({ id, data }: { id: HeroWidgetId; data: WeatherData }) {
       value: `${Math.round(current.windSpeed)}`,
       sub: `km/h ${windDegToDirection(current.windDirection)}`,
       color: 'var(--sg-cyan)',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Speed" value={`${Math.round(current.windSpeed)} km/h`} />
+          <DetailRow label="Gusts" value={`${Math.round(current.windGusts)} km/h`} color={current.windGusts > 60 ? 'var(--sg-amber)' : undefined} />
+          <DetailRow label="Direction" value={`${windDegToDirection(current.windDirection)} (${Math.round(current.windDirection)}°)`} />
+          <DetailRow label="Scale" value={beaufort(current.windSpeed)} />
+        </div>
+      ),
     },
     humidity: {
       label: 'HUMIDITY',
       value: `${Math.round(current.humidity)}%`,
       sub: current.humidity > 80 ? 'very humid' : current.humidity < 30 ? 'dry' : 'comfortable',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Relative" value={`${Math.round(current.humidity)}%`} />
+          <DetailRow label="Dew point" value={`${Math.round(current.dewPoint)}°C`} />
+          <DetailRow label="Comfort" value={dewPointLabel(current.dewPoint)} />
+          <MiniBar value={current.humidity} max={100} color="var(--sg-blue)" />
+        </div>
+      ),
     },
     uv: {
       label: 'UV INDEX',
       value: `${Math.round(current.uvIndex)}`,
-      sub: uvCategory(current.uvIndex).label,
-      color: uvCategory(current.uvIndex).color,
+      sub: uv.label,
+      color: uv.color,
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Index" value={`${Math.round(current.uvIndex)}`} color={uv.color} />
+          <DetailRow label="Category" value={uv.label} />
+          <DetailRow label="Safe exposure" value={uvExposureMin()} />
+          <DetailRow label="Today max" value={`${today?.uvIndexMax ?? '—'}`} />
+        </div>
+      ),
     },
     pressure: {
       label: 'PRESSURE',
       value: `${Math.round(current.pressure)}`,
       sub: 'hPa',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Pressure" value={`${Math.round(current.pressure)} hPa`} />
+          <DetailRow label="Forecast" value={pressureHint(current.pressure)} />
+          <DetailRow label="Standard" value="1013 hPa" color="var(--sg-text-muted)" />
+          <MiniBar value={Math.max(0, current.pressure - 960)} max={80} color="var(--sg-magenta)" />
+        </div>
+      ),
     },
     dewpoint: {
       label: 'DEW PT',
       value: `${Math.round(current.dewPoint)}°`,
       sub: 'Celsius',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Dew point" value={`${Math.round(current.dewPoint)}°C`} />
+          <DetailRow label="Air temp" value={`${Math.round(current.temperature)}°C`} />
+          <DetailRow label="Spread" value={`${(current.temperature - current.dewPoint).toFixed(1)}°C`} />
+          <DetailRow label="Feel" value={dewPointLabel(current.dewPoint)} />
+        </div>
+      ),
     },
     visibility: {
       label: 'VISIBILITY',
       value: formatVisibility(current.visibility),
       sub: current.visibility >= 10 ? 'clear' : current.visibility >= 5 ? 'good' : 'reduced',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Visibility" value={`${current.visibility.toFixed(1)} km`} />
+          <DetailRow
+            label="Quality"
+            value={current.visibility >= 20 ? 'Excellent' : current.visibility >= 10 ? 'Good' : current.visibility >= 5 ? 'Moderate' : 'Poor'}
+            color={current.visibility >= 10 ? 'var(--sg-green)' : current.visibility >= 5 ? 'var(--sg-amber)' : 'var(--sg-red)'}
+          />
+          <DetailRow label="Horizon" value={current.visibility >= 10 ? '≥ 10 km' : `≈ ${current.visibility.toFixed(0)} km`} />
+        </div>
+      ),
     },
     precip_prob: {
       label: 'RAIN',
-      value: `${daily[0]?.precipitationProbability ?? 0}%`,
+      value: `${today?.precipitationProbability ?? 0}%`,
       sub: 'today',
-      color: daily[0]?.precipitationProbability > 50 ? 'var(--sg-blue)' : undefined,
+      color: (today?.precipitationProbability ?? 0) > 50 ? 'var(--sg-blue)' : undefined,
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Today" value={`${today?.precipitationProbability ?? 0}%`} />
+          <DetailRow label="Total" value={`${(today?.precipitation ?? 0).toFixed(1)} mm`} />
+          {nextHours.length > 0 && (
+            <div>
+              <div className="sg-label mb-1">NEXT 6H</div>
+              <div className="flex gap-1 items-end" style={{ height: '24px' }}>
+                {nextHours.map((h, i) => (
+                  <div key={i} className="flex-1 rounded-sm" style={{
+                    height: `${Math.max(2, (h.precipitationProbability / 100) * 24)}px`,
+                    background: `rgba(77,124,255,${0.3 + (h.precipitationProbability / 100) * 0.7})`,
+                    minWidth: '6px',
+                  }} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      ),
     },
     cloud_cover: {
       label: 'CLOUDS',
       value: `${Math.round(current.cloudCover)}%`,
       sub: current.cloudCover > 80 ? 'overcast' : current.cloudCover > 40 ? 'partly' : 'clear',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Cover" value={`${Math.round(current.cloudCover)}%`} />
+          <DetailRow label="Type" value={cloudTypeLabel(current.cloudCover)} />
+          <DetailRow label="Solar block" value={`≈ ${Math.round(current.cloudCover * 0.7)}%`} />
+          <MiniBar value={current.cloudCover} max={100} color="var(--sg-text-secondary)" />
+        </div>
+      ),
     },
     sunrise_sunset: {
       label: 'SUNRISE',
       value: formatTime(sun.sunrise).replace(' ', '\u00a0'),
       sub: `↓ ${formatTime(sun.sunset)}`,
       color: '#ffb800',
+      details: (
+        <div className="space-y-1.5">
+          <DetailRow label="Sunrise" value={formatTime(sun.sunrise)} color="#ffb800" />
+          <DetailRow label="Sunset" value={formatTime(sun.sunset)} color="#ff6600" />
+          <DetailRow label="Solar noon" value={formatTime(sun.solarNoon)} color="#ffff00" />
+          <DetailRow
+            label="Day length"
+            value={`${Math.floor(sun.dayLength / 60)}h ${sun.dayLength % 60}m`}
+          />
+          <DetailRow label="Golden AM ends" value={formatTime(sun.goldenHourMorningEnd)} color="#ffbb44" />
+          <DetailRow label="Golden PM starts" value={formatTime(sun.goldenHourEveningStart)} color="#ff8833" />
+        </div>
+      ),
     },
   };
 
@@ -263,30 +450,101 @@ function HeroWidget({ id, data }: { id: HeroWidgetId; data: WeatherData }) {
 
   return (
     <div
-      className="flex flex-col justify-between px-2.5 py-2 rounded-lg"
+      className={`sg-widget-shiny flex flex-col rounded-lg${isExpanded ? ' sg-widget-expanded' : ''}`}
       style={{
         background: 'rgba(0,255,242,0.04)',
-        border: '1px solid rgba(0,255,242,0.1)',
+        border: `1px solid rgba(0,255,242,${isExpanded ? 0.35 : 0.1})`,
         minHeight: '56px',
-      }}
+        transition: 'border-color 0.25s ease, box-shadow 0.25s ease',
+        '--sheen-delay': sheenDelay,
+      } as React.CSSProperties}
+      onClick={onTap}
+      role="button"
+      tabIndex={0}
+      aria-expanded={isExpanded}
+      onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onTap(); } }}
     >
-      <span className="sg-label leading-none">{def.label}</span>
-      <span
-        className="sg-mono text-sm font-semibold leading-tight mt-1"
-        style={{ color: def.color ?? 'var(--sg-text-primary)' }}
-      >
-        {def.value}
-      </span>
-      {def.sub && (
-        <span className="sg-label leading-none mt-0.5" style={{ fontSize: '0.58rem' }}>
-          {def.sub}
+      {/* Collapsed view */}
+      <div className="flex flex-col justify-between px-2.5 py-2">
+        <div className="flex items-center justify-between">
+          <span className="sg-label leading-none">{def.label}</span>
+          {/* Expand indicator */}
+          <svg
+            width="8" height="8" viewBox="0 0 8 8" fill="none"
+            style={{
+              color: 'var(--sg-text-muted)',
+              transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.25s ease',
+              flexShrink: 0,
+            }}
+          >
+            <path d="M1.5 2.5L4 5L6.5 2.5" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+        <span
+          className="sg-mono text-sm font-semibold leading-tight mt-1"
+          style={{ color: def.color ?? 'var(--sg-text-primary)' }}
+        >
+          {def.value}
         </span>
+        {def.sub && (
+          <span className="sg-label leading-none mt-0.5" style={{ fontSize: '0.58rem' }}>
+            {def.sub}
+          </span>
+        )}
+      </div>
+
+      {/* Expanded detail panel */}
+      {isExpanded && (
+        <div
+          className="px-2.5 pb-2.5 sg-animate-expand-in"
+          style={{
+            borderTop: '1px solid rgba(0,255,242,0.12)',
+            marginTop: '2px',
+            paddingTop: '8px',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          {def.details}
+        </div>
       )}
     </div>
   );
 }
 
-function HeroSkeleton() {
+// Sub-components for widget detail panels
+function DetailRow({ label, value, color }: { label: string; value: string; color?: string }) {
+  return (
+    <div className="flex items-center justify-between gap-2">
+      <span className="sg-label" style={{ fontSize: '0.57rem', flexShrink: 0 }}>{label}</span>
+      <span
+        className="sg-mono truncate"
+        style={{ fontSize: '0.68rem', color: color ?? 'var(--sg-text-primary)', textAlign: 'right' }}
+      >
+        {value}
+      </span>
+    </div>
+  );
+}
+
+function MiniBar({ value, max, color }: { value: number; max: number; color: string }) {
+  const pct = Math.min(100, Math.max(0, (value / max) * 100));
+  return (
+    <div className="mt-1 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+      <div
+        className="h-full rounded-full"
+        style={{
+          width: `${pct}%`,
+          background: color,
+          boxShadow: `0 0 6px ${color}`,
+          transition: 'width 0.4s ease',
+        }}
+      />
+    </div>
+  );
+}
+
+export function HeroSkeleton() {
   return (
     <div className="px-4 pt-safe-top pb-2 space-y-3">
       <div className="flex justify-between">
@@ -307,10 +565,10 @@ function LocationPinIcon() {
     <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="flex-shrink-0">
       <path
         d="M7 1C4.79 1 3 2.79 3 5c0 3.25 4 8 4 8s4-4.75 4-8c0-2.21-1.79-4-4-4z"
-        stroke="#00fff2" strokeWidth={1.2} fill="none"
-        style={{ filter: 'drop-shadow(0 0 3px #00fff2)' }}
+        stroke="var(--sg-cyan)" strokeWidth={1.2} fill="none"
+        style={{ filter: 'drop-shadow(0 0 3px var(--sg-cyan))' }}
       />
-      <circle cx="7" cy="5" r="1.2" fill="#00fff2" />
+      <circle cx="7" cy="5" r="1.2" fill="var(--sg-cyan)" />
     </svg>
   );
 }
