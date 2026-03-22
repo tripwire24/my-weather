@@ -214,6 +214,7 @@ export default function StormGridApp() {
             data={extraData}
             loading={extraLoading}
             onRefresh={refreshExtra}
+            location={activeLocation}
           />
         )}
         {activeTab === 'live' && !activeLocation && (

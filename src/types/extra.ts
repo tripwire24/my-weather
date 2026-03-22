@@ -32,6 +32,8 @@ export interface FlightInfo {
   altitude: number;  // metres
   velocity: number;  // km/h (converted from m/s)
   heading: number;   // degrees
+  lat: number | null;
+  lon: number | null;
 }
 
 export interface FlightsData {

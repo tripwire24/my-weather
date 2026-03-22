@@ -5,14 +5,16 @@ import { EarthquakeCard } from '@/components/extra/EarthquakeCard';
 import { SpaceWeatherCard } from '@/components/extra/SpaceWeatherCard';
 import { FlightsCard } from '@/components/extra/FlightsCard';
 import type { ExtraData } from '@/types/extra';
+import type { Location } from '@/types/weather';
 
 interface LiveDashboardProps {
   data: ExtraData | null;
   loading: boolean;
   onRefresh: () => void;
+  location?: Location | null;
 }
 
-export function LiveDashboard({ data, loading, onRefresh }: LiveDashboardProps) {
+export function LiveDashboard({ data, loading, onRefresh, location }: LiveDashboardProps) {
   const updatedAt = data?.fetchedAt
     ? new Date(data.fetchedAt).toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit', hour12: true })
     : null;
@@ -62,6 +64,8 @@ export function LiveDashboard({ data, loading, onRefresh }: LiveDashboardProps) 
         <EarthquakeCard
           quakes={data?.earthquakes ?? []}
           loading={loading && !data}
+          userLat={location?.latitude}
+          userLon={location?.longitude}
         />
         <SpaceWeatherCard
           data={data?.spaceWeather ?? null}
@@ -70,6 +74,8 @@ export function LiveDashboard({ data, loading, onRefresh }: LiveDashboardProps) 
         <FlightsCard
           data={data?.flights ?? null}
           loading={loading && !data}
+          userLat={location?.latitude}
+          userLon={location?.longitude}
         />
       </div>
 

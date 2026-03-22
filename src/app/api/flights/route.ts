@@ -34,6 +34,8 @@ export async function GET(req: NextRequest) {
         altitude:      Math.round((s[7] as number) ?? 0),
         velocity:      Math.round(((s[9] as number) ?? 0) * 3.6), // m/s → km/h
         heading:       Math.round((s[10] as number) ?? 0),
+        lat:           (s[6] as number | null) ?? null,
+        lon:           (s[5] as number | null) ?? null,
       }))
       .sort((a, b) => b.altitude - a.altitude)
       .slice(0, 20);
