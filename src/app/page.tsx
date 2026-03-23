@@ -39,8 +39,8 @@ export default function Home() {
     }
   );
 
-  // Loading state
-  if (geoLoading || (weatherLoading && !data)) {
+  // Loading state - but let geo errors through
+  if (geoLoading) {
     return <LoadingScreen />;
   }
 
@@ -57,6 +57,11 @@ export default function Home() {
         onRequestGeolocation={requestGeolocation}
       />
     );
+  }
+
+  // Still fetching weather after we have a location
+  if (weatherLoading && !data) {
+    return <LoadingScreen />;
   }
 
   if (!data) return <LoadingScreen />;

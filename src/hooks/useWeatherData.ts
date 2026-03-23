@@ -19,7 +19,7 @@ interface WeatherState {
 export function useWeatherData(location: LocationInfo | null) {
   const [state, setState] = useState<WeatherState>({
     data: null,
-    loading: true,
+    loading: !!location,
     error: null,
     isStale: false,
   });
