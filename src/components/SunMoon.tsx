@@ -26,17 +26,12 @@ export function SunMoon({ data }: SunMoonProps) {
   const now = new Date();
 
   const dayLengthToday = getDayLength(sunrise, sunset);
-  const dayLengthYesterday =
-    daily.sunrise.length > 1
-      ? getDayLength(daily.sunrise[1], daily.sunset[1])
-      : dayLengthToday;
-  // For "yesterday" comparison, we compare today vs tomorrow to see the trend
-  // Actually, day[0] is today, we need yesterday. Use the difference between today and tomorrow.
+  // Compare today vs tomorrow to show whether days are getting longer or shorter
   const dayLengthTomorrow =
     daily.sunrise.length > 1
       ? getDayLength(daily.sunrise[1], daily.sunset[1])
       : dayLengthToday;
-  const dayLengthDiff = dayLengthToday - dayLengthYesterday;
+  const dayLengthDiff = dayLengthTomorrow - dayLengthToday;
 
   const moonData = getMoonPhase(now);
   const nextFull = getNextMoonPhaseDate("full", now);
@@ -85,10 +80,10 @@ export function SunMoon({ data }: SunMoonProps) {
             </p>
             <p className="text-xs text-sg-text-muted">
               {dayLengthDiff > 0
-                ? `${dayLengthDiff}m longer`
+                ? `${dayLengthDiff}m longer tomorrow`
                 : dayLengthDiff < 0
-                ? `${Math.abs(dayLengthDiff)}m shorter`
-                : "Same as yesterday"}
+                ? `${Math.abs(dayLengthDiff)}m shorter tomorrow`
+                : "Same length tomorrow"}
             </p>
           </div>
           <div>

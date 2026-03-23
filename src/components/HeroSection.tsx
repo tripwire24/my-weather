@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import type { WeatherData } from "@/types/weather";
 import { WeatherIcon } from "@/components/ui/WeatherIcon";
 import {
@@ -23,12 +24,21 @@ export function HeroSection({ data, isStale }: HeroSectionProps) {
   // Determine most important alert
   const alert = getTopAlert(current.uvIndex, current.windGusts, current.weatherCode);
 
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString("en-NZ", {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  });
+  // Avoid hydration mismatch: render time only on the client
+  const [timeStr, setTimeStr] = useState("");
+  useEffect(() => {
+    const update = () =>
+      setTimeStr(
+        new Date().toLocaleTimeString("en-NZ", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      );
+    update();
+    const id = setInterval(update, 30_000);
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <section className="px-4 pt-6 pb-4" aria-label="Current weather summary">
@@ -66,13 +76,13 @@ export function HeroSection({ data, isStale }: HeroSectionProps) {
         />
         <div>
           <div className="flex items-baseline gap-1">
-            <span className="sg-data text-5xl font-light text-sg-text-primary sg-text-glow-cyan">
+            <span className="sg-data-mono text-5xl font-light text-sg-text-primary sg-text-glow-cyan">
               {formatTemp(current.temperature)}
             </span>
           </div>
           <p className="text-sm text-sg-text-secondary">
             Feels like{" "}
-            <span className="sg-data">
+            <span className="sg-data-mono">
               {formatTemp(current.apparentTemperature)}
             </span>
           </p>

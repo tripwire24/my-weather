@@ -1,31 +1,31 @@
 @import "tailwindcss";
 
-/* ===== StormGrid Tron Theme ===== */
+/* ===== StormGrid Theme (refined) ===== */
 :root {
-  --sg-bg-primary: #0a0a0f;
-  --sg-bg-secondary: #0d0d14;
-  --sg-bg-card: rgba(13, 13, 20, 0.7);
-  --sg-bg-card-hover: rgba(20, 20, 35, 0.8);
+  --sg-bg-primary: #0c0c14;
+  --sg-bg-secondary: #10101a;
+  --sg-bg-card: rgba(16, 16, 26, 0.85);
+  --sg-bg-card-hover: rgba(22, 22, 38, 0.9);
 
-  --sg-cyan: #00fff2;
-  --sg-magenta: #ff00ff;
-  --sg-blue: #4d7cff;
-  --sg-amber: #ffb800;
-  --sg-green: #00ff88;
-  --sg-red: #ff3366;
+  --sg-cyan: #5ce0d6;
+  --sg-magenta: #c874e8;
+  --sg-blue: #6b8cff;
+  --sg-amber: #e8a830;
+  --sg-green: #4cd89d;
+  --sg-red: #e85c78;
 
-  --sg-text-primary: #e8e8f0;
-  --sg-text-secondary: #8888aa;
-  --sg-text-muted: #555570;
+  --sg-text-primary: #e4e4ec;
+  --sg-text-secondary: #9898b4;
+  --sg-text-muted: #5c5c78;
 
-  --sg-border: rgba(0, 255, 242, 0.12);
-  --sg-glow-cyan: 0 0 12px rgba(0, 255, 242, 0.3);
-  --sg-glow-magenta: 0 0 12px rgba(255, 0, 255, 0.3);
-  --sg-glow-blue: 0 0 12px rgba(77, 124, 255, 0.3);
-  --sg-glow-amber: 0 0 12px rgba(255, 184, 0, 0.3);
+  --sg-border: rgba(92, 224, 214, 0.10);
+  --sg-glow-cyan: 0 0 8px rgba(92, 224, 214, 0.15);
+  --sg-glow-magenta: 0 0 8px rgba(200, 116, 232, 0.15);
+  --sg-glow-blue: 0 0 8px rgba(107, 140, 255, 0.15);
+  --sg-glow-amber: 0 0 8px rgba(232, 168, 48, 0.15);
 
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-sans: var(--font-sans, 'DM Sans', system-ui, sans-serif);
+  --font-mono: var(--font-mono, 'JetBrains Mono', monospace);
 
   --background: var(--sg-bg-primary);
   --foreground: var(--sg-text-primary);
@@ -46,8 +46,8 @@
   --color-sg-bg-primary: var(--sg-bg-primary);
   --color-sg-bg-secondary: var(--sg-bg-secondary);
   --color-sg-bg-card: var(--sg-bg-card);
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Menlo, Consolas, monospace;
+  --font-sans: var(--font-sans, 'DM Sans', system-ui, sans-serif);
+  --font-mono: var(--font-mono, 'JetBrains Mono', monospace);
 }
 
 /* Base */
@@ -65,9 +65,9 @@ body {
   z-index: 0;
   pointer-events: none;
   background-image:
-    linear-gradient(rgba(0, 255, 242, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 242, 0.03) 1px, transparent 1px);
-  background-size: 40px 40px;
+    linear-gradient(rgba(92, 224, 214, 0.02) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(92, 224, 214, 0.02) 1px, transparent 1px);
+  background-size: 48px 48px;
 }
 
 /* Scanline overlay */
@@ -85,40 +85,34 @@ body {
   );
 }
 
-/* Glassmorphism card */
+/* Card */
 .sg-card {
   background: var(--sg-bg-card);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
   border: 1px solid var(--sg-border);
   border-radius: 12px;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease, border-color 0.2s ease;
 }
 
 .sg-card:hover {
   background: var(--sg-bg-card-hover);
-  border-color: rgba(0, 255, 242, 0.2);
+  border-color: rgba(92, 224, 214, 0.16);
 }
 
-/* Glow border variants */
+/* Accent border variants */
 .sg-glow-cyan {
-  box-shadow: var(--sg-glow-cyan);
-  border-color: rgba(0, 255, 242, 0.25);
+  border-color: rgba(92, 224, 214, 0.2);
 }
 
 .sg-glow-magenta {
-  box-shadow: var(--sg-glow-magenta);
-  border-color: rgba(255, 0, 255, 0.25);
+  border-color: rgba(200, 116, 232, 0.2);
 }
 
 .sg-glow-blue {
-  box-shadow: var(--sg-glow-blue);
-  border-color: rgba(77, 124, 255, 0.25);
+  border-color: rgba(107, 140, 255, 0.2);
 }
 
 .sg-glow-amber {
-  box-shadow: var(--sg-glow-amber);
-  border-color: rgba(255, 184, 0, 0.25);
+  border-color: rgba(232, 168, 48, 0.2);
 }
 
 /* Pulsing glow animation for live data */
@@ -141,20 +135,20 @@ body {
   animation: sg-fade-in 0.4s ease-out forwards;
 }
 
-/* Neon text glow */
+/* Text accent */
 .sg-text-glow-cyan {
-  text-shadow: 0 0 10px rgba(0, 255, 242, 0.5), 0 0 20px rgba(0, 255, 242, 0.2);
+  color: var(--sg-cyan);
 }
 
 .sg-text-glow-magenta {
-  text-shadow: 0 0 10px rgba(255, 0, 255, 0.5), 0 0 20px rgba(255, 0, 255, 0.2);
+  color: var(--sg-magenta);
 }
 
 /* Horizontal scroll container */
 .sg-scroll-x {
   overflow-x: auto;
   scrollbar-width: thin;
-  scrollbar-color: rgba(0, 255, 242, 0.2) transparent;
+  scrollbar-color: rgba(92, 224, 214, 0.15) transparent;
 }
 
 .sg-scroll-x::-webkit-scrollbar {
@@ -166,7 +160,7 @@ body {
 }
 
 .sg-scroll-x::-webkit-scrollbar-thumb {
-  background: rgba(0, 255, 242, 0.2);
+  background: rgba(92, 224, 214, 0.15);
   border-radius: 2px;
 }
 
@@ -207,8 +201,14 @@ body {
   overflow: hidden;
 }
 
-/* Data mono styling */
+/* Data styling - tabular figures for alignment, mono only on key values */
 .sg-data {
-  font-family: var(--font-mono), 'Courier New', monospace;
   font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+}
+
+.sg-data-mono {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
 }
