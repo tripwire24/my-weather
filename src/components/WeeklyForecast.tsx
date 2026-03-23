@@ -79,7 +79,7 @@ function DayRow({
     <div>
       <button
         onClick={onToggle}
-        className="w-full flex items-center gap-3 py-2 px-1 rounded-lg active:bg-[rgba(77,124,255,0.08)] transition-colors"
+        className="w-full flex items-center gap-3 py-2 px-1 rounded-lg active:bg-[rgba(107, 140, 255,0.08)] transition-colors"
       >
         {/* Day name */}
         <span
@@ -90,7 +90,7 @@ function DayRow({
         </span>
 
         {/* Icon */}
-        <WeatherIcon code={day.weatherCode} isDay={true} size={20} color={isToday ? '#00fff2' : '#4d7cff'} />
+        <WeatherIcon code={day.weatherCode} isDay={true} size={20} color={isToday ? '#5ce0d6' : '#6b8cff'} />
 
         {/* Precip prob */}
         <span className="sg-mono text-[10px] w-8 text-center flex-shrink-0" style={{ color: day.precipitationProbability > 40 ? 'var(--sg-cyan)' : 'var(--sg-text-muted)' }}>
@@ -111,9 +111,9 @@ function DayRow({
                 left: `${lowPct}%`,
                 width: `${highPct - lowPct}%`,
                 background: isToday
-                  ? 'linear-gradient(90deg, #4d7cff, #00fff2)'
+                  ? 'linear-gradient(90deg, #6b8cff, #5ce0d6)'
                   : 'linear-gradient(90deg, #3a5570, #7a9bbf)',
-                boxShadow: isToday ? '0 0 6px rgba(0,255,242,0.4)' : 'none',
+                boxShadow: isToday ? '0 0 6px rgba(92, 224, 214,0.4)' : 'none',
               }}
             />
           </div>
@@ -142,8 +142,8 @@ function DayRow({
         <div
           className="mx-1 mb-2 p-3 rounded-lg sg-animate-fade-in"
           style={{
-            background: 'rgba(77,124,255,0.06)',
-            border: '1px solid rgba(77,124,255,0.15)',
+            background: 'rgba(107, 140, 255,0.06)',
+            border: '1px solid rgba(107, 140, 255,0.15)',
           }}
         >
           <div className="grid grid-cols-3 gap-3 text-center">

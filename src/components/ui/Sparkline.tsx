@@ -15,7 +15,7 @@ export function Sparkline({
   data,
   width = 200,
   height = 40,
-  color = '#00fff2',
+  color = '#5ce0d6',
   fillColor,
   strokeWidth = 1.5,
   showDots = false,

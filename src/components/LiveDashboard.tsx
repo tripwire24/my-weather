@@ -39,9 +39,9 @@ export function LiveDashboard({ data, loading, onRefresh, location }: LiveDashbo
           disabled={loading}
           className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs sg-mono transition-all active:opacity-70"
           style={{
-            border: '1px solid rgba(0,255,242,0.2)',
+            border: '1px solid rgba(92, 224, 214,0.2)',
             color: 'var(--sg-cyan)',
-            background: loading ? 'rgba(0,255,242,0.05)' : 'transparent',
+            background: loading ? 'rgba(92, 224, 214,0.05)' : 'transparent',
           }}
         >
           <svg

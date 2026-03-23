@@ -71,7 +71,7 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
 
         <div
           className="flex-1 flex items-center gap-2 px-3 py-2 rounded-lg"
-          style={{ border: '1px solid var(--sg-border-bright)', background: 'rgba(0,255,242,0.05)' }}
+          style={{ border: '1px solid var(--sg-border-bright)', background: 'rgba(92, 224, 214,0.05)' }}
         >
           <SearchIcon />
           <input

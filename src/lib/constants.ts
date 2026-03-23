@@ -44,21 +44,21 @@ export const WIND_DIRECTIONS = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','S
 
 // UV Index categories
 export const UV_CATEGORIES = [
-  { max: 2,   label: 'Low',       color: '#00ff88', safeMinutes: null },
+  { max: 2,   label: 'Low',       color: '#4cd89d', safeMinutes: null },
   { max: 5,   label: 'Moderate',  color: '#ffff00', safeMinutes: 60 },
   { max: 7,   label: 'High',      color: '#ff9900', safeMinutes: 30 },
-  { max: 10,  label: 'Very High', color: '#ff3355', safeMinutes: 15 },
-  { max: Infinity, label: 'Extreme', color: '#ff00ff', safeMinutes: 10 },
+  { max: 10,  label: 'Very High', color: '#e85c78', safeMinutes: 15 },
+  { max: Infinity, label: 'Extreme', color: '#c874e8', safeMinutes: 10 },
 ];
 
 // AQI categories
 export const AQI_CATEGORIES = [
-  { max: 20,  label: 'Good',      color: '#00ff88' },
-  { max: 40,  label: 'Fair',      color: '#00fff2' },
+  { max: 20,  label: 'Good',      color: '#4cd89d' },
+  { max: 40,  label: 'Fair',      color: '#5ce0d6' },
   { max: 60,  label: 'Moderate',  color: '#ffff00' },
   { max: 80,  label: 'Poor',      color: '#ff9900' },
-  { max: 100, label: 'Very Poor', color: '#ff3355' },
-  { max: Infinity, label: 'Hazardous', color: '#ff00ff' },
+  { max: 100, label: 'Very Poor', color: '#e85c78' },
+  { max: Infinity, label: 'Hazardous', color: '#c874e8' },
 ];
 
 // Local storage keys

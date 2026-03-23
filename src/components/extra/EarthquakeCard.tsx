@@ -63,17 +63,17 @@ function SeismicRadar({ quakes, userLat, userLon }: {
       <style>{RADAR_STYLES}</style>
       <svg viewBox="0 0 220 220" style={{ width: '100%', maxWidth: '220px', display: 'block', margin: '0 auto' }}>
         {/* Background */}
-        <circle cx={cx} cy={cy} r={maxR + 4} fill="rgba(255,184,0,0.03)" />
+        <circle cx={cx} cy={cy} r={maxR + 4} fill="rgba(232, 168, 48,0.03)" />
 
         {/* Distance rings */}
         {rings.map((km, i) => {
           const r = (km / 1000) * maxR;
           return (
             <g key={km}>
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(255,184,0,0.12)" strokeWidth={1}
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(232, 168, 48,0.12)" strokeWidth={1}
                 strokeDasharray={i === rings.length - 1 ? 'none' : '3 4'} />
               <text x={cx + r + 2} y={cy - 2} fontSize="6" fontFamily="'JetBrains Mono',monospace"
-                fill="rgba(255,184,0,0.35)">{km}km</text>
+                fill="rgba(232, 168, 48,0.35)">{km}km</text>
             </g>
           );
         })}
@@ -85,7 +85,7 @@ function SeismicRadar({ quakes, userLat, userLon }: {
           const ly = cy + Math.sin(rad) * (maxR + 10);
           return (
             <text key={label} x={lx} y={ly + 3} textAnchor="middle" fontSize="7"
-              fontFamily="'JetBrains Mono',monospace" fill="rgba(255,184,0,0.4)">{label}</text>
+              fontFamily="'JetBrains Mono',monospace" fill="rgba(232, 168, 48,0.4)">{label}</text>
           );
         })}
 
@@ -142,16 +142,16 @@ function SortToggle({ mode, onChange }: { mode: SortMode; onChange: (m: SortMode
     { id: 'dist', label: 'NEAREST' },
   ];
   return (
-    <div className="flex gap-1 mb-3" style={{ background: 'rgba(255,184,0,0.06)', borderRadius: '8px', padding: '3px' }}>
+    <div className="flex gap-1 mb-3" style={{ background: 'rgba(232, 168, 48,0.06)', borderRadius: '8px', padding: '3px' }}>
       {opts.map(o => (
         <button key={o.id} onClick={() => onChange(o.id)}
           className="flex-1 py-1.5 rounded-md sg-mono transition-all active:opacity-70"
           style={{
             fontSize: '0.57rem',
             letterSpacing: '0.08em',
-            background: mode === o.id ? 'rgba(255,184,0,0.2)' : 'transparent',
+            background: mode === o.id ? 'rgba(232, 168, 48,0.2)' : 'transparent',
             color: mode === o.id ? 'var(--sg-amber)' : 'var(--sg-text-muted)',
-            boxShadow: mode === o.id ? '0 0 8px rgba(255,184,0,0.2)' : 'none',
+            boxShadow: mode === o.id ? '0 0 8px rgba(232, 168, 48,0.2)' : 'none',
           }}>
           {o.label}
         </button>
@@ -172,8 +172,8 @@ function QuakeRow({ quake, index }: { quake: EarthquakeEvent; index: number }) {
     <div
       className="rounded-lg transition-all duration-200"
       style={{
-        background: expanded ? 'rgba(255,184,0,0.05)' : 'transparent',
-        border: expanded ? '1px solid rgba(255,184,0,0.12)' : '1px solid transparent',
+        background: expanded ? 'rgba(232, 168, 48,0.05)' : 'transparent',
+        border: expanded ? '1px solid rgba(232, 168, 48,0.12)' : '1px solid transparent',
         animationDelay: `${index * 60}ms`,
       }}
     >
@@ -328,7 +328,7 @@ export function EarthquakeCard({ quakes, loading, userLat, userLon }: Earthquake
             ))}
           </div>
 
-          <div style={{ height: '1px', background: 'rgba(255,184,0,0.12)', marginBottom: '12px' }} />
+          <div style={{ height: '1px', background: 'rgba(232, 168, 48,0.12)', marginBottom: '12px' }} />
 
           <SortToggle mode={sortMode} onChange={setSortMode} />
 

@@ -10,7 +10,7 @@ const AURORA_COLORS: Record<SpaceWeatherData['auroraChance'], string> = {
   low:      'var(--sg-cyan)',
   possible: '#aaffaa',
   likely:   'var(--sg-green)',
-  high:     '#ff00ff',
+  high:     '#c874e8',
 };
 
 const AURORA_LABELS: Record<SpaceWeatherData['auroraChance'], string> = {
@@ -172,9 +172,9 @@ function KpSparkline({ history, current }: {
       <svg viewBox={`0 0 ${W} ${H}`} style={{ width: '100%', height: '50px' }} preserveAspectRatio="none">
         {/* G1 storm threshold */}
         <line x1={0} y1={stormY} x2={W} y2={stormY}
-          stroke="rgba(255,0,255,0.25)" strokeWidth={1} strokeDasharray="4 3" />
+          stroke="rgba(200, 116, 232,0.25)" strokeWidth={1} strokeDasharray="4 3" />
         <text x={W - 2} y={stormY - 3} textAnchor="end" fontSize="7"
-          fontFamily="'JetBrains Mono',monospace" fill="rgba(255,0,255,0.4)">G1</text>
+          fontFamily="'JetBrains Mono',monospace" fill="rgba(200, 116, 232,0.4)">G1</text>
 
         {/* Fill */}
         {fillPath && <path d={fillPath} fill={color} opacity={0.1} />}
@@ -234,8 +234,8 @@ export function SpaceWeatherCard({ data, loading }: SpaceWeatherCardProps) {
           {data.kpIndex >= 5 && (
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg mb-3"
               style={{
-                background: 'rgba(255,51,85,0.12)',
-                border: '1px solid rgba(255,51,85,0.4)',
+                background: 'rgba(232, 92, 120,0.12)',
+                border: '1px solid rgba(232, 92, 120,0.4)',
                 animation: 'storm-flash 2s ease-in-out infinite',
               }}>
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -268,7 +268,7 @@ export function SpaceWeatherCard({ data, loading }: SpaceWeatherCardProps) {
             </div>
           </div>
 
-          <div style={{ height: '1px', background: 'rgba(255,0,255,0.15)', marginBottom: '14px' }} />
+          <div style={{ height: '1px', background: 'rgba(200, 116, 232,0.15)', marginBottom: '14px' }} />
 
           {/* Aurora visibility */}
           <div className="flex items-start gap-2 mb-3">
@@ -297,7 +297,7 @@ export function SpaceWeatherCard({ data, loading }: SpaceWeatherCardProps) {
           </div>
 
           {/* Kp meaning legend */}
-          <div style={{ height: '1px', background: 'rgba(255,0,255,0.15)', marginBottom: '14px' }} />
+          <div style={{ height: '1px', background: 'rgba(200, 116, 232,0.15)', marginBottom: '14px' }} />
           <div className="grid grid-cols-3 gap-2 mb-4">
             {[
               { range: '0–2', label: 'Quiet',         color: 'var(--sg-cyan)',   desc: 'Calm conditions' },
@@ -316,13 +316,13 @@ export function SpaceWeatherCard({ data, loading }: SpaceWeatherCardProps) {
           {/* 24h sparkline */}
           {data.history.length > 2 && (
             <>
-              <div style={{ height: '1px', background: 'rgba(255,0,255,0.15)', marginBottom: '12px' }} />
+              <div style={{ height: '1px', background: 'rgba(200, 116, 232,0.15)', marginBottom: '12px' }} />
               <div className="sg-label mb-2" style={{ fontSize: '0.6rem' }}>24H KP HISTORY</div>
               <KpSparkline history={data.history} current={data.kpIndex} />
               <div className="flex justify-between mt-1">
                 <span className="sg-label" style={{ fontSize: '0.55rem' }}>24h ago</span>
                 <span className="sg-label" style={{ fontSize: '0.55rem' }}>
-                  <span style={{ color: 'rgba(255,0,255,0.5)' }}>— — </span>G1 storm threshold
+                  <span style={{ color: 'rgba(200, 116, 232,0.5)' }}>— — </span>G1 storm threshold
                 </span>
                 <span className="sg-label" style={{ fontSize: '0.55rem' }}>now</span>
               </div>

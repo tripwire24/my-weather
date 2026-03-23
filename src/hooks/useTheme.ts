@@ -343,7 +343,7 @@ const PALETTES: Record<string, AdaptivePalette> = {
       '--sg-amber-glow': 'rgba(238,187,0,0.14)',
       '--sg-blue': '#6644dd',
       '--sg-green': '#7744aa',
-      '--sg-red': '#ff3366',
+      '--sg-red': '#e85c78',
       '--sg-border': 'rgba(140,80,240,0.22)',
       '--sg-border-bright': 'rgba(140,80,240,0.5)',
       '--sg-grid-color': 'rgba(120,70,210,0.04)',

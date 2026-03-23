@@ -55,8 +55,8 @@ export function HourlyForecast({ hourly }: HourlyForecastProps) {
             data={temps}
             width={Math.max(320, upcoming.length * 28)}
             height={48}
-            color="#00fff2"
-            fillColor="#00fff2"
+            color="#5ce0d6"
+            fillColor="#5ce0d6"
             highlightIndex={currentIndex}
             showDots={false}
           />
@@ -82,9 +82,9 @@ function HourlyCell({ hour, isNow }: { hour: HourlyForecastType; isNow: boolean 
       className="flex flex-col items-center gap-1 flex-shrink-0 px-2.5 py-2 rounded-lg transition-all"
       style={{
         minWidth: '58px',
-        background: isNow ? 'rgba(0,255,242,0.1)' : 'rgba(0,255,242,0.03)',
-        border: `1px solid ${isNow ? 'rgba(0,255,242,0.4)' : 'rgba(0,255,242,0.1)'}`,
-        boxShadow: isNow ? '0 0 12px rgba(0,255,242,0.15)' : 'none',
+        background: isNow ? 'rgba(92, 224, 214,0.1)' : 'rgba(92, 224, 214,0.03)',
+        border: `1px solid ${isNow ? 'rgba(92, 224, 214,0.4)' : 'rgba(92, 224, 214,0.1)'}`,
+        boxShadow: isNow ? '0 0 12px rgba(92, 224, 214,0.15)' : 'none',
       }}
     >
       {/* Time */}
@@ -93,7 +93,7 @@ function HourlyCell({ hour, isNow }: { hour: HourlyForecastType; isNow: boolean 
       </span>
 
       {/* Icon */}
-      <WeatherIcon code={hour.weatherCode} isDay={hour.isDay} size={22} color={isNow ? '#00fff2' : '#4d7cff'} />
+      <WeatherIcon code={hour.weatherCode} isDay={hour.isDay} size={22} color={isNow ? '#5ce0d6' : '#6b8cff'} />
 
       {/* Temperature */}
       <span
@@ -106,7 +106,7 @@ function HourlyCell({ hour, isNow }: { hour: HourlyForecastType; isNow: boolean 
       {/* Precip prob */}
       {hour.precipitationProbability > 5 && (
         <div className="flex items-center gap-0.5">
-          <RainDrop size={8} color={hour.precipitationProbability > 60 ? '#00fff2' : '#3a5570'} />
+          <RainDrop size={8} color={hour.precipitationProbability > 60 ? '#5ce0d6' : '#3a5570'} />
           <span className="sg-mono text-[9px]" style={{ color: hour.precipitationProbability > 60 ? 'var(--sg-cyan)' : 'var(--sg-text-muted)' }}>
             {hour.precipitationProbability}%
           </span>
@@ -121,7 +121,7 @@ function HourlyCell({ hour, isNow }: { hour: HourlyForecastType; isNow: boolean 
   );
 }
 
-function RainDrop({ size = 10, color = '#00fff2' }) {
+function RainDrop({ size = 10, color = '#5ce0d6' }) {
   return (
     <svg width={size} height={size * 1.2} viewBox="0 0 10 12" fill="none">
       <path d="M5 1 C3 4, 1 6, 1 8 A4 4 0 0 0 9 8 C9 6 7 4 5 1 Z"

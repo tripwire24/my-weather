@@ -8,7 +8,7 @@ interface CompassRoseProps {
   color?: string;
 }
 
-export function CompassRose({ degrees, size = 80, color = '#00fff2' }: CompassRoseProps) {
+export function CompassRose({ degrees, size = 80, color = '#5ce0d6' }: CompassRoseProps) {
   const cx = size / 2;
   const cy = size / 2;
   const r = size * 0.38;
@@ -72,7 +72,7 @@ export function CompassRose({ degrees, size = 80, color = '#00fff2' }: CompassRo
               textAnchor="middle"
               fontSize={size * 0.12}
               fontFamily="'JetBrains Mono', monospace"
-              fill={label === 'N' ? '#ff00ff' : color}
+              fill={label === 'N' ? '#c874e8' : color}
               opacity={label === 'N' ? 0.9 : 0.5}
               fontWeight={label === 'N' ? 'bold' : 'normal'}
             >

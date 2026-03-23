@@ -85,7 +85,7 @@ export function UVSolar({ current, hourly, solarNoon }: UVSolarProps) {
         <div className="h-3 rounded-full overflow-hidden" style={{ background: 'rgba(255,255,255,0.05)' }}>
           <div className="h-full" style={{
             width: `${uvPct}%`,
-            background: `linear-gradient(90deg, #00ff88, #ffff00, #ff9900, #ff3355, #ff00ff)`,
+            background: `linear-gradient(90deg, #4cd89d, #ffff00, #ff9900, #e85c78, #c874e8)`,
             transition: 'width 0.6s ease',
           }} />
         </div>
@@ -98,7 +98,7 @@ export function UVSolar({ current, hourly, solarNoon }: UVSolarProps) {
 
       {/* Solar noon */}
       <div className="flex items-center justify-between px-3 py-2 rounded-lg mb-4"
-        style={{ background: 'rgba(255,184,0,0.06)', border: '1px solid rgba(255,184,0,0.15)' }}
+        style={{ background: 'rgba(232, 168, 48,0.06)', border: '1px solid rgba(232, 168, 48,0.15)' }}
       >
         <div>
           <span className="sg-label block">SOLAR NOON</span>

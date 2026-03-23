@@ -52,9 +52,9 @@ export function HeroCustomizer({ enabled, onToggle, onClose }: HeroCustomizerPro
               onClick={() => onToggle(widget.id)}
               className="w-full flex items-center gap-4 px-4 py-3 rounded-xl text-left transition-all active:scale-[0.98]"
               style={{
-                background: on ? 'rgba(0,255,242,0.08)' : 'rgba(255,255,255,0.02)',
-                border: `1px solid ${on ? 'rgba(0,255,242,0.35)' : 'rgba(255,255,255,0.08)'}`,
-                boxShadow: on ? '0 0 12px rgba(0,255,242,0.08)' : 'none',
+                background: on ? 'rgba(92, 224, 214,0.08)' : 'rgba(255,255,255,0.02)',
+                border: `1px solid ${on ? 'rgba(92, 224, 214,0.35)' : 'rgba(255,255,255,0.08)'}`,
+                boxShadow: on ? '0 0 12px rgba(92, 224, 214,0.08)' : 'none',
               }}
             >
               {/* Toggle pill */}
@@ -64,7 +64,7 @@ export function HeroCustomizer({ enabled, onToggle, onClose }: HeroCustomizerPro
                   width: '40px',
                   height: '22px',
                   background: on ? 'var(--sg-cyan)' : 'rgba(255,255,255,0.1)',
-                  boxShadow: on ? '0 0 10px rgba(0,255,242,0.5)' : 'none',
+                  boxShadow: on ? '0 0 10px rgba(92, 224, 214,0.5)' : 'none',
                   position: 'relative',
                 }}
               >
@@ -73,7 +73,7 @@ export function HeroCustomizer({ enabled, onToggle, onClose }: HeroCustomizerPro
                   style={{
                     width: '18px',
                     height: '18px',
-                    background: on ? '#0a0a0f' : 'rgba(255,255,255,0.4)',
+                    background: on ? '#0c0c14' : 'rgba(255,255,255,0.4)',
                     left: on ? '20px' : '2px',
                   }}
                 />
@@ -125,8 +125,8 @@ function WidgetPreview({ id, on }: { id: HeroWidgetId; on: boolean }) {
     <div
       className="flex-shrink-0 px-2 py-1 rounded text-[10px] sg-mono"
       style={{
-        background: on ? 'rgba(0,255,242,0.08)' : 'rgba(255,255,255,0.04)',
-        border: `1px solid ${on ? 'rgba(0,255,242,0.2)' : 'rgba(255,255,255,0.06)'}`,
+        background: on ? 'rgba(92, 224, 214,0.08)' : 'rgba(255,255,255,0.04)',
+        border: `1px solid ${on ? 'rgba(92, 224, 214,0.2)' : 'rgba(255,255,255,0.06)'}`,
         color,
       }}
     >

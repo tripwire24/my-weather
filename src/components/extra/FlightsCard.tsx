@@ -21,9 +21,9 @@ function altBand(m: number): 'ground' | 'low' | 'mid' | 'cruise' | 'high' {
 }
 
 const ALT_BANDS = [
-  { id: 'high',   label: 'HIGH ALT',  range: '> 11km',  color: '#ff00ff' },
+  { id: 'high',   label: 'HIGH ALT',  range: '> 11km',  color: '#c874e8' },
   { id: 'cruise', label: 'CRUISE',    range: '7.5–11km', color: 'var(--sg-cyan)' },
-  { id: 'mid',    label: 'MID',       range: '3–7.5km', color: '#4d7cff' },
+  { id: 'mid',    label: 'MID',       range: '3–7.5km', color: '#6b8cff' },
   { id: 'low',    label: 'LOW',       range: '< 3km',   color: 'var(--sg-amber)' },
 ] as const;
 
@@ -34,7 +34,7 @@ function headingArrow(deg: number) {
 
 function altColor(m: number) {
   if (m > 9000) return 'var(--sg-text-primary)';
-  if (m > 4500) return '#4d7cff';
+  if (m > 4500) return '#6b8cff';
   return 'var(--sg-text-secondary)';
 }
 
@@ -69,17 +69,17 @@ function FlightRadar({ flights, userLat, userLon }: {
       <style>{RADAR_STYLES}</style>
       <svg viewBox="0 0 220 220" style={{ width: '100%', maxWidth: '220px', display: 'block', margin: '0 auto' }}>
         {/* Outer disc */}
-        <circle cx={cx} cy={cy} r={maxR + 5} fill="rgba(0,255,242,0.03)" />
+        <circle cx={cx} cy={cy} r={maxR + 5} fill="rgba(92, 224, 214,0.03)" />
 
         {/* Grid rings */}
         {rings.map((km, i) => {
           const r = (km / 167) * maxR;
           return (
             <g key={km}>
-              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(0,255,242,0.12)" strokeWidth={1}
+              <circle cx={cx} cy={cy} r={r} fill="none" stroke="rgba(92, 224, 214,0.12)" strokeWidth={1}
                 strokeDasharray={i === rings.length - 1 ? 'none' : '3 4'} />
               <text x={cx + r + 2} y={cy - 3} fontSize="6" fontFamily="'JetBrains Mono',monospace"
-                fill="rgba(0,255,242,0.35)">{km}km</text>
+                fill="rgba(92, 224, 214,0.35)">{km}km</text>
             </g>
           );
         })}
@@ -91,13 +91,13 @@ function FlightRadar({ flights, userLat, userLon }: {
           const ly = cy + Math.sin(rad) * (maxR + 12);
           return (
             <text key={label} x={lx} y={ly + 3} textAnchor="middle" fontSize="7"
-              fontFamily="'JetBrains Mono',monospace" fill="rgba(0,255,242,0.35)">{label}</text>
+              fontFamily="'JetBrains Mono',monospace" fill="rgba(92, 224, 214,0.35)">{label}</text>
           );
         })}
 
         {/* Cross hairs */}
-        <line x1={cx} y1={cy - maxR - 2} x2={cx} y2={cy + maxR + 2} stroke="rgba(0,255,242,0.1)" strokeWidth={0.5} />
-        <line x1={cx - maxR - 2} y1={cy} x2={cx + maxR + 2} y2={cy} stroke="rgba(0,255,242,0.1)" strokeWidth={0.5} />
+        <line x1={cx} y1={cy - maxR - 2} x2={cx} y2={cy + maxR + 2} stroke="rgba(92, 224, 214,0.1)" strokeWidth={0.5} />
+        <line x1={cx - maxR - 2} y1={cy} x2={cx + maxR + 2} y2={cy} stroke="rgba(92, 224, 214,0.1)" strokeWidth={0.5} />
 
         {/* Sweep line (rotating gradient) */}
         <g style={{ transformOrigin: `${cx}px ${cy}px`, animation: 'radar-sweep 4s linear infinite' }}>
@@ -222,16 +222,16 @@ function SortToggle({ mode, onChange }: { mode: SortMode; onChange: (m: SortMode
     { id: 'country', label: 'COUNTRY'  },
   ];
   return (
-    <div className="flex gap-1 mb-2" style={{ background: 'rgba(0,255,242,0.06)', borderRadius: '8px', padding: '3px' }}>
+    <div className="flex gap-1 mb-2" style={{ background: 'rgba(92, 224, 214,0.06)', borderRadius: '8px', padding: '3px' }}>
       {opts.map(o => (
         <button key={o.id} onClick={() => onChange(o.id)}
           className="flex-1 py-1.5 rounded-md sg-mono transition-all active:opacity-70"
           style={{
             fontSize: '0.57rem',
             letterSpacing: '0.08em',
-            background: mode === o.id ? 'rgba(0,255,242,0.18)' : 'transparent',
+            background: mode === o.id ? 'rgba(92, 224, 214,0.18)' : 'transparent',
             color: mode === o.id ? 'var(--sg-cyan)' : 'var(--sg-text-muted)',
-            boxShadow: mode === o.id ? '0 0 8px rgba(0,255,242,0.2)' : 'none',
+            boxShadow: mode === o.id ? '0 0 8px rgba(92, 224, 214,0.2)' : 'none',
           }}>
           {o.label}
         </button>
@@ -250,8 +250,8 @@ function FlightRow({ flight }: { flight: FlightInfo }) {
   return (
     <div className="rounded-lg transition-all duration-200"
       style={{
-        background: expanded ? 'rgba(0,255,242,0.04)' : 'transparent',
-        border: expanded ? '1px solid rgba(0,255,242,0.1)' : '1px solid transparent',
+        background: expanded ? 'rgba(92, 224, 214,0.04)' : 'transparent',
+        border: expanded ? '1px solid rgba(92, 224, 214,0.1)' : '1px solid transparent',
       }}>
       <button onClick={() => setExpanded(v => !v)}
         className="w-full grid gap-x-2 items-center px-2 py-1.5 rounded-lg active:opacity-70"
@@ -360,12 +360,12 @@ export function FlightsCard({ data, loading, userLat, userLon }: FlightsCardProp
           <FlightRadar flights={data.flights} userLat={userLat} userLon={userLon} />
 
           {/* Altitude histogram */}
-          <div style={{ height: '1px', background: 'rgba(0,255,242,0.12)', margin: '12px 0' }} />
+          <div style={{ height: '1px', background: 'rgba(92, 224, 214,0.12)', margin: '12px 0' }} />
           <div className="sg-label mb-2" style={{ fontSize: '0.6rem' }}>ALTITUDE DISTRIBUTION</div>
           <AltitudeHistogram flights={data.flights} />
 
           {/* Flight table */}
-          <div style={{ height: '1px', background: 'rgba(0,255,242,0.12)', margin: '12px 0' }} />
+          <div style={{ height: '1px', background: 'rgba(92, 224, 214,0.12)', margin: '12px 0' }} />
 
           {/* Column headers */}
           <div className="grid gap-x-2 mb-1 px-2" style={{ gridTemplateColumns: '68px 1fr 56px 44px 28px' }}>

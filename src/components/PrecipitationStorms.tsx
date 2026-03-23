@@ -54,7 +54,7 @@ export function PrecipitationStorms({ current, hourly, dailyPrecipTotal }: Preci
       icon={icon}
     >
       {/* Current precip */}
-      <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(77,124,255,0.06)', border: '1px solid rgba(77,124,255,0.15)' }}>
+      <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(107, 140, 255,0.06)', border: '1px solid rgba(107, 140, 255,0.15)' }}>
         <div className="flex items-center justify-between">
           <div>
             <span className="sg-label block mb-1">CURRENT</span>
@@ -79,7 +79,7 @@ export function PrecipitationStorms({ current, hourly, dailyPrecipTotal }: Preci
       </div>
 
       {/* Daily total */}
-      <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-lg" style={{ background: 'rgba(77,124,255,0.04)', border: '1px solid rgba(77,124,255,0.1)' }}>
+      <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-lg" style={{ background: 'rgba(107, 140, 255,0.04)', border: '1px solid rgba(107, 140, 255,0.1)' }}>
         <div>
           <span className="sg-label block">TODAY'S TOTAL</span>
           <span className="sg-mono text-sm text-[var(--sg-text-primary)]">{formatPrecip(dailyPrecipTotal)}</span>
@@ -97,8 +97,8 @@ export function PrecipitationStorms({ current, hourly, dailyPrecipTotal }: Preci
         <div
           className="flex items-center gap-2 px-3 py-2 rounded-lg sg-animate-pulse-glow"
           style={{
-            background: 'rgba(255,184,0,0.1)',
-            border: '1px solid rgba(255,184,0,0.4)',
+            background: 'rgba(232, 168, 48,0.1)',
+            border: '1px solid rgba(232, 168, 48,0.4)',
           }}
         >
           <span style={{ color: 'var(--sg-amber)', fontSize: '1.2rem' }}>⚡</span>

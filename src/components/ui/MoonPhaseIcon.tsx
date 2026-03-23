@@ -6,7 +6,7 @@ interface MoonPhaseIconProps {
   color?: string;
 }
 
-export function MoonPhaseIcon({ phase, size = 48, color = '#00fff2' }: MoonPhaseIconProps) {
+export function MoonPhaseIcon({ phase, size = 48, color = '#5ce0d6' }: MoonPhaseIconProps) {
   const cx = size / 2;
   const cy = size / 2;
   const r = size * 0.38;

@@ -47,20 +47,20 @@ export function SunMoon({ sun, moon }: SunMoonProps) {
 
       {/* Sun times grid */}
       <div className="grid grid-cols-2 gap-3 mb-4">
-        <SunTimeCard label="SUNRISE" time={sun.sunrise} color="#ffb800" icon="↑" />
+        <SunTimeCard label="SUNRISE" time={sun.sunrise} color="#e8a830" icon="↑" />
         <SunTimeCard label="SUNSET" time={sun.sunset} color="#ff6600" icon="↓" />
         <SunTimeCard label="SOLAR NOON" time={sun.solarNoon} color="#ffff00" icon="◉" />
         <SunTimeCard label="DAY LENGTH" time={null} value={formatDuration(sun.dayLength)} color="var(--sg-cyan)" icon="⏱" />
       </div>
 
       {/* Golden / Blue hour */}
-      <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
+      <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(232, 168, 48,0.05)', border: '1px solid rgba(232, 168, 48,0.15)' }}>
         <span className="sg-label block mb-2">GOLDEN & BLUE HOUR</span>
         <div className="grid grid-cols-2 gap-2">
-          <MiniTime label="Blue hour AM" time={sun.blueHourMorningStart} color="#4d7cff" />
-          <MiniTime label="Golden AM ends" time={sun.goldenHourMorningEnd} color="#ffb800" />
+          <MiniTime label="Blue hour AM" time={sun.blueHourMorningStart} color="#6b8cff" />
+          <MiniTime label="Golden AM ends" time={sun.goldenHourMorningEnd} color="#e8a830" />
           <MiniTime label="Golden PM starts" time={sun.goldenHourEveningStart} color="#ff6600" />
-          <MiniTime label="Blue hour PM" time={sun.blueHourEveningEnd} color="#4d7cff" />
+          <MiniTime label="Blue hour PM" time={sun.blueHourEveningEnd} color="#6b8cff" />
         </div>
       </div>
 
@@ -68,12 +68,12 @@ export function SunMoon({ sun, moon }: SunMoonProps) {
 
       {/* Moon */}
       <div className="flex items-center gap-4 mb-4">
-        <MoonPhaseIcon phase={moon.phase} size={72} color="#00fff2" />
+        <MoonPhaseIcon phase={moon.phase} size={72} color="#5ce0d6" />
         <div className="flex-1">
           <div className="text-sm font-semibold text-[var(--sg-text-primary)] mb-1">{moon.phaseName}</div>
           <div className="sg-label mb-1">ILLUMINATION</div>
           <div className="flex items-center gap-2 mb-2">
-            <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(0,255,242,0.1)' }}>
+            <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(92, 224, 214,0.1)' }}>
               <div
                 className="h-full rounded-full"
                 style={{
@@ -90,14 +90,14 @@ export function SunMoon({ sun, moon }: SunMoonProps) {
 
       {/* Next full / new moon */}
       <div className="grid grid-cols-2 gap-3">
-        <div className="p-2 rounded-lg text-center" style={{ background: 'rgba(0,255,242,0.05)', border: '1px solid rgba(0,255,242,0.12)' }}>
+        <div className="p-2 rounded-lg text-center" style={{ background: 'rgba(92, 224, 214,0.05)', border: '1px solid rgba(92, 224, 214,0.12)' }}>
           <span className="sg-label block">NEXT FULL MOON</span>
           <span className="sg-mono text-xs text-[var(--sg-text-primary)] block mt-0.5">
             {formatDate(moon.nextFullMoon)}
           </span>
           <span className="sg-label">{formatCountdown(moon.nextFullMoon)}</span>
         </div>
-        <div className="p-2 rounded-lg text-center" style={{ background: 'rgba(0,255,242,0.05)', border: '1px solid rgba(0,255,242,0.12)' }}>
+        <div className="p-2 rounded-lg text-center" style={{ background: 'rgba(92, 224, 214,0.05)', border: '1px solid rgba(92, 224, 214,0.12)' }}>
           <span className="sg-label block">NEXT NEW MOON</span>
           <span className="sg-mono text-xs text-[var(--sg-text-primary)] block mt-0.5">
             {formatDate(moon.nextNewMoon)}
@@ -117,7 +117,7 @@ function SunTimeCard({ label, time, value, color, icon }: {
   icon: string;
 }) {
   return (
-    <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.1)' }}>
+    <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(232, 168, 48,0.05)', border: '1px solid rgba(232, 168, 48,0.1)' }}>
       <span style={{ color, fontSize: '1rem' }}>{icon}</span>
       <div>
         <span className="sg-label block">{label}</span>

@@ -37,7 +37,7 @@ export function WindAtmosphere({ current, pressureTrend = 'steady' }: WindAtmosp
         {/* Compass */}
         <div className="flex flex-col items-center">
           <span className="sg-label mb-2">WIND DIRECTION</span>
-          <CompassRose degrees={current.windDirection} size={96} color="#00fff2" />
+          <CompassRose degrees={current.windDirection} size={96} color="#5ce0d6" />
         </div>
 
         {/* Speed + Gusts */}
@@ -56,7 +56,7 @@ export function WindAtmosphere({ current, pressureTrend = 'steady' }: WindAtmosp
         <ArcGauge
           value={current.humidity}
           size={82}
-          color="#4d7cff"
+          color="#6b8cff"
           unit="%"
           label="HUMIDITY"
         />
@@ -96,7 +96,7 @@ export function WindAtmosphere({ current, pressureTrend = 'steady' }: WindAtmosp
       </div>
 
       {/* Visibility */}
-      <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(0,255,242,0.04)', border: '1px solid rgba(0,255,242,0.1)' }}>
+      <div className="flex items-center justify-between px-3 py-2 rounded-lg" style={{ background: 'rgba(92, 224, 214,0.04)', border: '1px solid rgba(92, 224, 214,0.1)' }}>
         <div>
           <span className="sg-label block">VISIBILITY</span>
           <span className="sg-mono text-sm text-[var(--sg-text-primary)]">{formatVisibility(current.visibility)}</span>

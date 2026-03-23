@@ -10,10 +10,10 @@ interface AstronomySeasonsProps {
 }
 
 const SEASON_COLORS: Record<string, string> = {
-  Spring: '#00ff88',
-  Summer: '#ffb800',
+  Spring: '#4cd89d',
+  Summer: '#e8a830',
   Autumn: '#ff6600',
-  Winter: '#4d7cff',
+  Winter: '#6b8cff',
 };
 
 const SEASON_ICONS: Record<string, string> = {
@@ -74,7 +74,7 @@ export function AstronomySeasons({ astronomy, dayLength }: AstronomySeasonsProps
 
       {/* Day length */}
       <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-lg"
-        style={{ background: 'rgba(255,0,255,0.05)', border: '1px solid rgba(255,0,255,0.15)' }}
+        style={{ background: 'rgba(200, 116, 232,0.05)', border: '1px solid rgba(200, 116, 232,0.15)' }}
       >
         <div>
           <span className="sg-label block">DAY LENGTH</span>
@@ -95,13 +95,13 @@ export function AstronomySeasons({ astronomy, dayLength }: AstronomySeasonsProps
           label={nextSolstice.type === 'summer' ? 'Summer Solstice' : 'Winter Solstice'}
           date={nextSolstice.date}
           type="solstice"
-          color={nextSolstice.type === 'summer' ? '#ffb800' : '#4d7cff'}
+          color={nextSolstice.type === 'summer' ? '#e8a830' : '#6b8cff'}
         />
         <EventCard
           label={nextEquinox.type === 'spring' ? 'Spring Equinox' : 'Autumn Equinox'}
           date={nextEquinox.date}
           type="equinox"
-          color={nextEquinox.type === 'spring' ? '#00ff88' : '#ff6600'}
+          color={nextEquinox.type === 'spring' ? '#4cd89d' : '#ff6600'}
         />
       </div>
     </CollapsibleCard>

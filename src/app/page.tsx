@@ -82,7 +82,7 @@ export default function StormGridApp() {
           className="fixed top-0 left-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-b-2xl text-xs sg-mono"
           style={{
             background: 'rgba(8,12,30,0.9)',
-            border: '1px solid rgba(0,255,242,0.3)',
+            border: '1px solid rgba(92, 224, 214,0.3)',
             borderTop: 'none',
             color: 'var(--sg-cyan)',
             transform: `translateX(-50%) translateY(${isRefreshing ? 0 : Math.min(1, ptrDistance / PTR_THRESHOLD) * 20}px)`,
@@ -137,7 +137,7 @@ export default function StormGridApp() {
               onClick={refresh}
               disabled={loading}
               className="flex items-center justify-center w-9 h-9 rounded-lg transition-all active:opacity-70 active:scale-95"
-              style={{ border: '1px solid rgba(0,255,242,0.2)', color: 'var(--sg-cyan)' }}
+              style={{ border: '1px solid rgba(92, 224, 214,0.2)', color: 'var(--sg-cyan)' }}
               aria-label="Refresh"
             >
               <svg width="13" height="13" viewBox="0 0 13 13" fill="none"
@@ -159,7 +159,7 @@ export default function StormGridApp() {
         )}
         {showError && (
           <div className="mx-4 mb-3 px-3 py-2 rounded-lg text-xs sg-mono"
-            style={{ background: 'rgba(255,51,85,0.1)', border: '1px solid rgba(255,51,85,0.3)', color: 'var(--sg-red)' }}
+            style={{ background: 'rgba(232, 92, 120,0.1)', border: '1px solid rgba(232, 92, 120,0.3)', color: 'var(--sg-red)' }}
           >
             ⚠ {error}
           </div>
@@ -229,7 +229,7 @@ export default function StormGridApp() {
           background: 'rgba(8,10,28,0.96)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(0,255,242,0.12)',
+          borderTop: '1px solid rgba(92, 224, 214,0.12)',
           paddingBottom: 'env(safe-area-inset-bottom, 0px)',
         }}
       >
@@ -350,14 +350,14 @@ function ThemeToggle({ current, onChange }: { current: ThemeMode; onChange: (m: 
   return (
     <div
       className="flex items-center rounded-md overflow-hidden"
-      style={{ border: '1px solid rgba(0,255,242,0.15)', gap: 0 }}
+      style={{ border: '1px solid rgba(92, 224, 214,0.15)', gap: 0 }}
     >
       {modes.map(({ id, label, icon }) => (
         <button
           key={id}
           onClick={() => onChange(id)}
           className={`sg-theme-btn${current === id ? ' active' : ''}`}
-          style={{ borderRadius: 0, border: 'none', borderRight: id !== 'adaptive' ? '1px solid rgba(0,255,242,0.1)' : 'none' }}
+          style={{ borderRadius: 0, border: 'none', borderRight: id !== 'adaptive' ? '1px solid rgba(92, 224, 214,0.1)' : 'none' }}
           aria-label={`${label} theme`}
           title={`${label} mode`}
         >
@@ -400,11 +400,11 @@ function LocationPrompt({ onRequest }: { onRequest: () => void }) {
 function StormGridLogo() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <polygon points="10,2 18,10 10,18 2,10" stroke="#00fff2" strokeWidth={1.5} fill="none"
-        style={{ filter: 'drop-shadow(0 0 4px #00fff2)' }} />
-      <polygon points="10,5 15,10 10,15 5,10" stroke="#ff00ff" strokeWidth={1} fill="rgba(0,255,242,0.05)"
-        style={{ filter: 'drop-shadow(0 0 3px #ff00ff)' }} />
-      <circle cx="10" cy="10" r="2" fill="#00fff2" opacity={0.8} />
+      <polygon points="10,2 18,10 10,18 2,10" stroke="#5ce0d6" strokeWidth={1.5} fill="none"
+        style={{ filter: 'drop-shadow(0 0 4px #5ce0d6)' }} />
+      <polygon points="10,5 15,10 10,15 5,10" stroke="#c874e8" strokeWidth={1} fill="rgba(92, 224, 214,0.05)"
+        style={{ filter: 'drop-shadow(0 0 3px #c874e8)' }} />
+      <circle cx="10" cy="10" r="2" fill="#5ce0d6" opacity={0.8} />
     </svg>
   );
 }

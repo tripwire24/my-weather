@@ -16,8 +16,8 @@ interface ArcGaugeProps {
 export function ArcGauge({
   value,
   size = 80,
-  color = '#00fff2',
-  trackColor = 'rgba(0,255,242,0.1)',
+  color = '#5ce0d6',
+  trackColor = 'rgba(92, 224, 214,0.1)',
   strokeWidth = 6,
   label,
   unit = '',

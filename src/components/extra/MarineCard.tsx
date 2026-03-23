@@ -73,21 +73,21 @@ function WaveVisual({ height, period, swellH, swellP }: {
   const dur2 = `${Math.max(2.5, swellP * 0.5).toFixed(1)}s`;
 
   return (
-    <div style={{ overflow: 'hidden', height: '68px', borderRadius: '8px', background: 'rgba(77,124,255,0.04)', marginBottom: '4px' }}>
+    <div style={{ overflow: 'hidden', height: '68px', borderRadius: '8px', background: 'rgba(107, 140, 255,0.04)', marginBottom: '4px' }}>
       <svg viewBox="0 0 320 80" style={{ width: '100%', height: '68px' }} preserveAspectRatio="none">
         <defs>
           <linearGradient id="mg-fill" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#4d7cff" stopOpacity={0.25} />
-            <stop offset="100%" stopColor="#4d7cff" stopOpacity={0.03} />
+            <stop offset="0%" stopColor="#6b8cff" stopOpacity={0.25} />
+            <stop offset="100%" stopColor="#6b8cff" stopOpacity={0.03} />
           </linearGradient>
         </defs>
         {/* swell (background) */}
         <g>
-          <path d={`${p2} L${W},80 L0,80 Z`} fill="#4d7cff" opacity={0.06}>
+          <path d={`${p2} L${W},80 L0,80 Z`} fill="#6b8cff" opacity={0.06}>
             <animateTransform attributeName="transform" type="translate"
               from="0 0" to="-320 0" dur={dur2} repeatCount="indefinite" />
           </path>
-          <path d={p2} fill="none" stroke="#4d7cff" strokeWidth={1} opacity={0.25}>
+          <path d={p2} fill="none" stroke="#6b8cff" strokeWidth={1} opacity={0.25}>
             <animateTransform attributeName="transform" type="translate"
               from="0 0" to="-320 0" dur={dur2} repeatCount="indefinite" />
           </path>
@@ -98,13 +98,13 @@ function WaveVisual({ height, period, swellH, swellP }: {
             <animateTransform attributeName="transform" type="translate"
               from="0 0" to="-320 0" dur={dur1} repeatCount="indefinite" />
           </path>
-          <path d={p1} fill="none" stroke="#4d7cff" strokeWidth={1.6} opacity={0.85}>
+          <path d={p1} fill="none" stroke="#6b8cff" strokeWidth={1.6} opacity={0.85}>
             <animateTransform attributeName="transform" type="translate"
               from="0 0" to="-320 0" dur={dur1} repeatCount="indefinite" />
           </path>
         </g>
         {/* height label */}
-        <text x="8" y="14" fontFamily="'JetBrains Mono',monospace" fontSize="10" fill="#4d7cff" opacity={0.7}>
+        <text x="8" y="14" fontFamily="'JetBrains Mono',monospace" fontSize="10" fill="#6b8cff" opacity={0.7}>
           {height.toFixed(1)}m
         </text>
       </svg>
@@ -123,7 +123,7 @@ function TabStrip({ active, onChange }: { active: MarineTab; onChange: (t: Marin
     { id: 'surf',  label: 'SURF'  },
   ];
   return (
-    <div className="flex gap-1 mb-3" style={{ background: 'rgba(77,124,255,0.06)', borderRadius: '8px', padding: '3px' }}>
+    <div className="flex gap-1 mb-3" style={{ background: 'rgba(107, 140, 255,0.06)', borderRadius: '8px', padding: '3px' }}>
       {tabs.map(t => (
         <button
           key={t.id}
@@ -132,9 +132,9 @@ function TabStrip({ active, onChange }: { active: MarineTab; onChange: (t: Marin
           style={{
             fontSize: '0.6rem',
             letterSpacing: '0.1em',
-            background: active === t.id ? 'rgba(77,124,255,0.25)' : 'transparent',
-            color: active === t.id ? '#4d7cff' : 'var(--sg-text-muted)',
-            boxShadow: active === t.id ? '0 0 8px rgba(77,124,255,0.3)' : 'none',
+            background: active === t.id ? 'rgba(107, 140, 255,0.25)' : 'transparent',
+            color: active === t.id ? '#6b8cff' : 'var(--sg-text-muted)',
+            boxShadow: active === t.id ? '0 0 8px rgba(107, 140, 255,0.3)' : 'none',
           }}
         >
           {t.label}
@@ -190,7 +190,7 @@ function SurfFact({ label, value, ideal }: { label: string; value: string; ideal
   );
 }
 
-function Divider({ color = 'rgba(77,124,255,0.15)' }: { color?: string }) {
+function Divider({ color = 'rgba(107, 140, 255,0.15)' }: { color?: string }) {
   return <div style={{ height: '1px', background: color, margin: '14px 0' }} />;
 }
 
@@ -270,7 +270,7 @@ export function MarineCard({ data, loading }: MarineCardProps) {
                   <Divider />
                   <div className="sg-label mb-2" style={{ fontSize: '0.6rem' }}>WAVE DIRECTION</div>
                   <div className="flex justify-center">
-                    <CompassRose degrees={data.waveDirection} size={104} color="#4d7cff" />
+                    <CompassRose degrees={data.waveDirection} size={104} color="#6b8cff" />
                   </div>
                 </>
               )}
@@ -281,7 +281,7 @@ export function MarineCard({ data, loading }: MarineCardProps) {
           {tab === 'swell' && (
             <div className="mt-3 space-y-4">
               <div className="grid grid-cols-3 gap-3">
-                <MetricBlock label="HEIGHT" value={fmt(data.swellHeight, 'm')} color="#4d7cff" />
+                <MetricBlock label="HEIGHT" value={fmt(data.swellHeight, 'm')} color="#6b8cff" />
                 <MetricBlock label="PERIOD" value={fmt(data.swellPeriod, 's')} />
                 <MetricBlock label="ENERGY" value={waveEnergy(data.swellHeight, data.swellPeriod)} />
               </div>
@@ -303,7 +303,7 @@ export function MarineCard({ data, loading }: MarineCardProps) {
                   <Divider />
                   <div className="sg-label mb-2" style={{ fontSize: '0.6rem' }}>SWELL DIRECTION (FROM)</div>
                   <div className="flex justify-center">
-                    <CompassRose degrees={data.swellDirection} size={104} color="#4d7cff" />
+                    <CompassRose degrees={data.swellDirection} size={104} color="#6b8cff" />
                   </div>
                 </>
               )}

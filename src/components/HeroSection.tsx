@@ -89,7 +89,7 @@ export function HeroSection({
       {/* Background radial glow */}
       <div
         className="absolute inset-0 pointer-events-none sg-animate-light-pulse"
-        style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,255,242,0.07) 0%, transparent 70%)', borderRadius: '0 0 40% 40%' }}
+        style={{ background: 'radial-gradient(ellipse 80% 60% at 50% 0%, rgba(92, 224, 214,0.07) 0%, transparent 70%)', borderRadius: '0 0 40% 40%' }}
       />
 
       {/* Top row: location + time + customize */}
@@ -121,7 +121,7 @@ export function HeroSection({
           <button
             onClick={onCustomize}
             className="mt-0.5 flex items-center justify-center w-9 h-9 rounded-lg transition-all active:opacity-70 active:scale-95"
-            style={{ border: '1px solid rgba(0,255,242,0.2)', color: 'var(--sg-text-muted)' }}
+            style={{ border: '1px solid rgba(92, 224, 214,0.2)', color: 'var(--sg-text-muted)' }}
             aria-label="Customise hero dashboard"
             title="Customise"
           >
@@ -218,8 +218,8 @@ export function HeroSection({
           <div
             className="flex items-center gap-1.5 px-2 py-1 rounded text-xs sg-mono"
             style={{
-              background: 'rgba(255,184,0,0.1)',
-              border: '1px solid rgba(255,184,0,0.35)',
+              background: 'rgba(232, 168, 48,0.1)',
+              border: '1px solid rgba(232, 168, 48,0.35)',
               color: 'var(--sg-amber)',
             }}
           >
@@ -346,7 +346,7 @@ function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<He
           {nextHours.length >= 2 && (
             <div>
               <div className="sg-label mb-1.5">6H WIND TREND</div>
-              <Sparkline data={nextHours.map(h => h.windSpeed)} width={260} height={36} color="var(--sg-cyan)" fillColor="rgba(0,255,242,0.08)" />
+              <Sparkline data={nextHours.map(h => h.windSpeed)} width={260} height={36} color="var(--sg-cyan)" fillColor="rgba(92, 224, 214,0.08)" />
             </div>
           )}
         </div>
@@ -370,7 +370,7 @@ function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<He
           {nextHours.length >= 2 && (
             <div>
               <div className="sg-label mb-1.5">6H HUMIDITY TREND</div>
-              <Sparkline data={nextHours.map(h => h.humidity)} width={260} height={36} color="var(--sg-blue)" fillColor="rgba(77,124,255,0.08)" />
+              <Sparkline data={nextHours.map(h => h.humidity)} width={260} height={36} color="var(--sg-blue)" fillColor="rgba(107, 140, 255,0.08)" />
             </div>
           )}
         </div>
@@ -490,8 +490,8 @@ function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<He
                     <div key={i} className="flex-1 flex flex-col items-center gap-0.5">
                       <div className="w-full rounded-sm" style={{
                         height: `${barH}px`,
-                        background: `rgba(77,124,255,${0.25 + pct * 0.75})`,
-                        boxShadow: pct > 0.5 ? '0 0 4px rgba(77,124,255,0.5)' : undefined,
+                        background: `rgba(107, 140, 255,${0.25 + pct * 0.75})`,
+                        boxShadow: pct > 0.5 ? '0 0 4px rgba(107, 140, 255,0.5)' : undefined,
                       }} />
                     </div>
                   );
@@ -538,8 +538,8 @@ function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<He
       label: 'SUNRISE',
       value: formatTime(sun.sunrise).replace(' ', '\u00a0'),
       sub: `↓ ${formatTime(sun.sunset)}`,
-      color: '#ffb800',
-      tileBar: { pct: Math.max(0, Math.min(100, sun.currentPosition * 100)), color: '#ffb800' },
+      color: '#e8a830',
+      tileBar: { pct: Math.max(0, Math.min(100, sun.currentPosition * 100)), color: '#e8a830' },
       details: (
         <div className="space-y-4">
           <SunArc
@@ -553,7 +553,7 @@ function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<He
             height={120}
           />
           <div className="space-y-2">
-            <PRow label="Sunrise" value={formatTime(sun.sunrise)} color="#ffb800" />
+            <PRow label="Sunrise" value={formatTime(sun.sunrise)} color="#e8a830" />
             <PRow label="Sunset" value={formatTime(sun.sunset)} color="#ff6600" />
             <PRow label="Solar noon" value={formatTime(sun.solarNoon)} color="#ffff00" />
             <PRow label="Day length" value={`${Math.floor(sun.dayLength / 60)}h ${sun.dayLength % 60}m`} />
@@ -686,7 +686,7 @@ function buildWidgetDefs(data: WeatherData, extra?: ExtraData | null): Record<He
                 <div key={i} className="flex items-center gap-3">
                   <div
                     className="sg-mono text-xs font-bold flex-shrink-0 w-16 text-center py-0.5 rounded"
-                    style={{ color: 'var(--sg-cyan)', border: '1px solid rgba(0,255,242,0.2)', background: 'rgba(0,255,242,0.06)' }}
+                    style={{ color: 'var(--sg-cyan)', border: '1px solid rgba(92, 224, 214,0.2)', background: 'rgba(92, 224, 214,0.06)' }}
                   >
                     {f.callsign.trim() || '—'}
                   </div>
@@ -729,11 +729,11 @@ function HeroWidget({
       className="sg-widget-shiny flex flex-col rounded-lg"
       style={{
         position: 'relative',
-        background: isActive ? 'rgba(0,255,242,0.08)' : 'rgba(0,255,242,0.04)',
-        border: `1px solid rgba(0,255,242,${isActive ? 0.4 : 0.1})`,
+        background: isActive ? 'rgba(92, 224, 214,0.08)' : 'rgba(92, 224, 214,0.04)',
+        border: `1px solid rgba(92, 224, 214,${isActive ? 0.4 : 0.1})`,
         minHeight: '72px',
         transition: 'border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease',
-        boxShadow: isActive ? '0 0 0 1px rgba(0,255,242,0.2), 0 0 16px rgba(0,255,242,0.12)' : undefined,
+        boxShadow: isActive ? '0 0 0 1px rgba(92, 224, 214,0.2), 0 0 16px rgba(92, 224, 214,0.12)' : undefined,
         '--sheen-delay': sheenDelay,
         // Staggered entrance, then persistent border pulse; active overrides with glow pulse
         animationName: isActive
@@ -822,18 +822,18 @@ function WidgetPopover({
         className="fixed bottom-0 left-0 right-0 z-50 sg-animate-slide-up"
         style={{
           background: 'rgba(8,10,28,0.98)',
-          border: '1px solid rgba(0,255,242,0.28)',
+          border: '1px solid rgba(92, 224, 214,0.28)',
           borderBottom: 'none',
           borderRadius: '20px 20px 0 0',
           padding: '20px 20px',
           paddingBottom: 'calc(24px + env(safe-area-inset-bottom, 0px))',
-          boxShadow: '0 -8px 40px rgba(0,255,242,0.12), 0 -2px 20px rgba(0,0,0,0.7)',
+          boxShadow: '0 -8px 40px rgba(92, 224, 214,0.12), 0 -2px 20px rgba(0,0,0,0.7)',
         }}
       >
         {/* Drag handle */}
         <div
           className="mx-auto mb-5 rounded-full"
-          style={{ width: '40px', height: '4px', background: 'rgba(0,255,242,0.2)' }}
+          style={{ width: '40px', height: '4px', background: 'rgba(92, 224, 214,0.2)' }}
         />
 
         {/* Header row */}
@@ -853,7 +853,7 @@ function WidgetPopover({
           <button
             onClick={onClose}
             className="flex items-center justify-center w-10 h-10 rounded-xl flex-shrink-0 ml-4 active:opacity-70"
-            style={{ border: '1px solid rgba(0,255,242,0.2)', color: 'var(--sg-text-muted)' }}
+            style={{ border: '1px solid rgba(92, 224, 214,0.2)', color: 'var(--sg-text-muted)' }}
             aria-label="Close"
           >
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -863,7 +863,7 @@ function WidgetPopover({
         </div>
 
         {/* Divider */}
-        <div style={{ height: '1px', background: 'rgba(0,255,242,0.12)', marginBottom: '20px' }} />
+        <div style={{ height: '1px', background: 'rgba(92, 224, 214,0.12)', marginBottom: '20px' }} />
 
         {/* Detail content */}
         {def.details}
@@ -1141,7 +1141,7 @@ function RainDrops() {
           100% { transform: translateY(32px); opacity: 0; }
         }
       `}</style>
-      <div className="relative overflow-hidden rounded-lg" style={{ height: '32px', background: 'rgba(77,124,255,0.06)', border: '1px solid rgba(77,124,255,0.15)' }}>
+      <div className="relative overflow-hidden rounded-lg" style={{ height: '32px', background: 'rgba(107, 140, 255,0.06)', border: '1px solid rgba(107, 140, 255,0.15)' }}>
         {[10, 25, 40, 55, 70, 85].map((left, i) => (
           <div
             key={i}
@@ -1150,7 +1150,7 @@ function RainDrops() {
               left: `${left}%`,
               top: '0',
               height: '8px',
-              background: 'rgba(77,124,255,0.7)',
+              background: 'rgba(107, 140, 255,0.7)',
               animation: `sg-raindrop ${0.7 + i * 0.15}s linear infinite`,
               animationDelay: `${i * 0.12}s`,
             }}

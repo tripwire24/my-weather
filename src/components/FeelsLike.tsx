@@ -45,7 +45,7 @@ export function FeelsLike({ current }: FeelsLikeProps) {
     >
       {/* Main comparison */}
       <div className="flex items-center gap-4 mb-4">
-        <div className="flex-1 text-center p-3 rounded-xl" style={{ background: 'rgba(0,255,242,0.06)', border: '1px solid rgba(0,255,242,0.15)' }}>
+        <div className="flex-1 text-center p-3 rounded-xl" style={{ background: 'rgba(92, 224, 214,0.06)', border: '1px solid rgba(92, 224, 214,0.15)' }}>
           <span className="sg-label block mb-1">ACTUAL</span>
           <span className="sg-mono text-2xl font-bold text-[var(--sg-text-primary)]">{formatTemp(current.temperature)}</span>
         </div>
@@ -120,19 +120,19 @@ export function FeelsLike({ current }: FeelsLikeProps) {
 }
 
 function getComfortLevel(feelsLike: number, humidity: number): { label: string; color: string; emoji: string; description: string } {
-  if (feelsLike < -10) return { label: 'Dangerously Cold', color: '#4d7cff', emoji: '🥶', description: 'Risk of frostbite. Limit outdoor exposure.' };
+  if (feelsLike < -10) return { label: 'Dangerously Cold', color: '#6b8cff', emoji: '🥶', description: 'Risk of frostbite. Limit outdoor exposure.' };
   if (feelsLike < 0) return { label: 'Very Cold', color: '#7ab2ff', emoji: '❄️', description: 'Heavy winter clothing essential.' };
-  if (feelsLike < 8) return { label: 'Cold', color: '#4d7cff', emoji: '🧥', description: 'Warm layers recommended.' };
-  if (feelsLike < 15) return { label: 'Cool', color: '#00fff2', emoji: '🙂', description: 'Light jacket advised.' };
-  if (feelsLike < 22) return { label: 'Comfortable', color: '#00ff88', emoji: '😊', description: 'Ideal conditions for most.' };
+  if (feelsLike < 8) return { label: 'Cold', color: '#6b8cff', emoji: '🧥', description: 'Warm layers recommended.' };
+  if (feelsLike < 15) return { label: 'Cool', color: '#5ce0d6', emoji: '🙂', description: 'Light jacket advised.' };
+  if (feelsLike < 22) return { label: 'Comfortable', color: '#4cd89d', emoji: '😊', description: 'Ideal conditions for most.' };
   if (feelsLike < 28) return { label: 'Warm', color: '#ffff00', emoji: '☀️', description: 'Pleasant. Light clothing.' };
   if (feelsLike < 34) return { label: 'Hot', color: '#ff9900', emoji: '🌡️', description: 'Stay hydrated, seek shade.' };
-  return { label: 'Very Hot', color: '#ff3355', emoji: '🔥', description: 'Heat stress risk. Minimize exertion.' };
+  return { label: 'Very Hot', color: '#e85c78', emoji: '🔥', description: 'Heat stress risk. Minimize exertion.' };
 }
 
 function FactorRow({ label, description, color, icon }: { label: string; description: string; color: string; icon: string }) {
   return (
-    <div className="flex items-start gap-2.5 p-2 rounded-lg" style={{ background: 'rgba(0,255,242,0.03)', border: '1px solid rgba(0,255,242,0.08)' }}>
+    <div className="flex items-start gap-2.5 p-2 rounded-lg" style={{ background: 'rgba(92, 224, 214,0.03)', border: '1px solid rgba(92, 224, 214,0.08)' }}>
       <span className="text-base flex-shrink-0">{icon}</span>
       <div className="min-w-0">
         <span className="sg-mono text-xs font-semibold" style={{ color }}>{label}</span>
@@ -145,7 +145,7 @@ function FactorRow({ label, description, color, icon }: { label: string; descrip
 function ArrowIcon() {
   return (
     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <path d="M5 10h10M13 7l3 3-3 3" stroke="rgba(0,255,242,0.4)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+      <path d="M5 10h10M13 7l3 3-3 3" stroke="rgba(92, 224, 214,0.4)" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }

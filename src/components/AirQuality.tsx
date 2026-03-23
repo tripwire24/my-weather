@@ -55,7 +55,7 @@ export function AirQuality({ airQuality }: AirQualityProps) {
             className="h-full rounded-full"
             style={{
               width: `${Math.min(100, aqi)}%`,
-              background: `linear-gradient(90deg, #00ff88, #00fff2, #ffff00, #ff9900, #ff3355, #ff00ff)`,
+              background: `linear-gradient(90deg, #4cd89d, #5ce0d6, #ffff00, #ff9900, #e85c78, #c874e8)`,
             }}
           />
         </div>
@@ -84,7 +84,7 @@ function PollutantBar({ label, value, max, unit }: { label: string; value: numbe
   const color = pct < 30 ? 'var(--sg-green)' : pct < 60 ? 'var(--sg-cyan)' : pct < 80 ? 'var(--sg-amber)' : 'var(--sg-red)';
 
   return (
-    <div className="p-2 rounded-lg" style={{ background: 'rgba(255,0,255,0.04)', border: '1px solid rgba(255,0,255,0.12)' }}>
+    <div className="p-2 rounded-lg" style={{ background: 'rgba(200, 116, 232,0.04)', border: '1px solid rgba(200, 116, 232,0.12)' }}>
       <div className="flex justify-between mb-1">
         <span className="sg-label">{label}</span>
         <span className="sg-mono text-[10px]" style={{ color }}>{value.toFixed(1)}</span>
