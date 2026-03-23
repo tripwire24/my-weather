@@ -1,172 +1,272 @@
-"use client";
+'use client';
+
+/**
+ * Tron-style geometric weather icons rendered as inline SVG.
+ * No images, no icon fonts — pure SVG geometry.
+ */
 
 interface WeatherIconProps {
-  code: number;
+  code: number;      // WMO weather code
   isDay?: boolean;
   size?: number;
+  color?: string;
   className?: string;
 }
 
-/**
- * Minimal geometric/line-art weather icons in Tron style.
- * Uses SVG with neon glow effects.
- */
-export function WeatherIcon({
-  code,
-  isDay = true,
-  size = 32,
-  className = "",
-}: WeatherIconProps) {
-  const condition = getConditionFromCode(code);
+export function WeatherIcon({ code, isDay = true, size = 32, color = '#00fff2', className = '' }: WeatherIconProps) {
+  const icon = getIconSVG(code, isDay, size, color);
   return (
     <svg
       width={size}
       height={size}
-      viewBox="0 0 48 48"
-      fill="none"
+      viewBox={`0 0 ${size} ${size}`}
       className={className}
-      aria-label={condition}
+      style={{ filter: `drop-shadow(0 0 ${size * 0.12}px ${color})`, flexShrink: 0 }}
+      aria-hidden
     >
-      <defs>
-        <filter id="glow">
-          <feGaussianBlur stdDeviation="1.5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-      {renderIcon(condition, isDay)}
+      {icon}
     </svg>
   );
 }
 
-function getConditionFromCode(code: number): string {
-  if (code === 0 || code === 1) return "clear";
-  if (code === 2) return "partly-cloudy";
-  if (code === 3) return "overcast";
-  if (code === 45 || code === 48) return "fog";
-  if (code >= 51 && code <= 57) return "drizzle";
-  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return "rain";
-  if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return "snow";
-  if (code >= 95) return "thunderstorm";
-  return "clear";
+function getIconSVG(code: number, isDay: boolean, s: number, c: string) {
+  const cx = s / 2;
+  const cy = s / 2;
+  const r = s * 0.3;
+  const sw = Math.max(1, s * 0.055); // stroke width
+
+  // Clear day / night
+  if (code === 0) {
+    if (isDay) {
+      return <SunIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+    } else {
+      return <MoonIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+    }
+  }
+
+  // Mainly clear
+  if (code === 1) {
+    if (isDay) return <SunIcon cx={cx} cy={cy} r={r * 0.85} sw={sw} c={c} />;
+    return <MoonIcon cx={cx} cy={cy} r={r * 0.85} sw={sw} c={c} />;
+  }
+
+  // Partly cloudy
+  if (code === 2) {
+    return <PartlyCloudyIcon cx={cx} cy={cy} r={r} sw={sw} c={c} isDay={isDay} />;
+  }
+
+  // Overcast
+  if (code === 3) return <CloudIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+
+  // Fog
+  if (code === 45 || code === 48) return <FogIcon cx={cx} cy={cy} r={r} sw={sw} c={c} s={s} />;
+
+  // Drizzle
+  if (code >= 51 && code <= 57) return <DrizzleIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+
+  // Rain
+  if (code >= 61 && code <= 67) return <RainIcon cx={cx} cy={cy} r={r} sw={sw} c={c} heavy={code === 65 || code === 67} />;
+
+  // Snow
+  if ((code >= 71 && code <= 77) || (code >= 85 && code <= 86)) return <SnowIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+
+  // Showers
+  if (code >= 80 && code <= 82) return <ShowersIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+
+  // Thunderstorm
+  if (code >= 95) return <ThunderstormIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
+
+  // Default — sun
+  return <SunIcon cx={cx} cy={cy} r={r} sw={sw} c={c} />;
 }
 
-function renderIcon(condition: string, isDay: boolean) {
-  const cyan = "#00fff2";
-  const magenta = "#ff00ff";
-  const amber = "#ffb800";
-  const blue = "#4d7cff";
-  const white = "#e8e8f0";
+// Sun: circle with rays
+function SunIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  const rays = 8;
+  const innerR = r * 0.75;
+  const outerR = r * 1.28;
+  return (
+    <g stroke={c} fill="none" strokeLinecap="round">
+      <circle cx={cx} cy={cy} r={innerR} strokeWidth={sw} />
+      {Array.from({ length: rays }).map((_, i) => {
+        const angle = (i * 360) / rays;
+        const rad = (angle * Math.PI) / 180;
+        return (
+          <line
+            key={i}
+            x1={cx + Math.cos(rad) * (innerR + sw)}
+            y1={cy + Math.sin(rad) * (innerR + sw)}
+            x2={cx + Math.cos(rad) * outerR}
+            y2={cy + Math.sin(rad) * outerR}
+            strokeWidth={sw}
+          />
+        );
+      })}
+    </g>
+  );
+}
 
-  switch (condition) {
-    case "clear":
-      return isDay ? (
-        // Sun: geometric circle with radiating lines
-        <g filter="url(#glow)">
-          <circle cx="24" cy="24" r="8" stroke={amber} strokeWidth="2" fill="none" />
-          {[0, 45, 90, 135, 180, 225, 270, 315].map((angle) => {
-            const rad = (angle * Math.PI) / 180;
-            const x1 = 24 + Math.cos(rad) * 12;
-            const y1 = 24 + Math.sin(rad) * 12;
-            const x2 = 24 + Math.cos(rad) * 16;
-            const y2 = 24 + Math.sin(rad) * 16;
-            return (
-              <line key={angle} x1={x1} y1={y1} x2={x2} y2={y2} stroke={amber} strokeWidth="1.5" strokeLinecap="round" />
-            );
-          })}
-        </g>
-      ) : (
-        // Moon: crescent
-        <g filter="url(#glow)">
-          <path d="M28 10a14 14 0 1 0 0 28 10 10 0 0 1 0-28z" stroke={cyan} strokeWidth="1.5" fill="none" />
-          <circle cx="18" cy="16" r="1" fill={cyan} opacity="0.4" />
-          <circle cx="32" cy="28" r="0.8" fill={cyan} opacity="0.3" />
-        </g>
-      );
+// Moon: crescent
+function MoonIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw}>
+      <path
+        d={`M ${cx} ${cy - r}
+            A ${r} ${r} 0 1 1 ${cx + r * 0.3} ${cy + r * 0.95}
+            A ${r * 0.85} ${r * 0.85} 0 1 0 ${cx} ${cy - r}
+        `}
+        strokeLinejoin="round"
+      />
+    </g>
+  );
+}
 
-    case "partly-cloudy":
-      return (
-        <g filter="url(#glow)">
-          {isDay && (
-            <>
-              <circle cx="18" cy="16" r="6" stroke={amber} strokeWidth="1.5" fill="none" />
-              {[0, 60, 120, 180, 240, 300].map((angle) => {
-                const rad = (angle * Math.PI) / 180;
-                return (
-                  <line key={angle} x1={18 + Math.cos(rad) * 8} y1={16 + Math.sin(rad) * 8} x2={18 + Math.cos(rad) * 10} y2={16 + Math.sin(rad) * 10} stroke={amber} strokeWidth="1" strokeLinecap="round" />
-                );
-              })}
-            </>
-          )}
-          <path d="M14 32h24M16 28h20c2 0 4-2 4-4s-2-4-4-4h-1c0-4-3-7-7-7s-7 3-7 7h-1c-2 0-4 2-4 4s2 4 4 4z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.7" />
-        </g>
-      );
+// Partly cloudy
+function PartlyCloudyIcon({ cx, cy, r, sw, c, isDay }: IconBaseProps & { isDay: boolean }) {
+  const sunCx = cx - r * 0.25;
+  const sunCy = cy - r * 0.2;
+  const sunR = r * 0.42;
+  return (
+    <g stroke={c} fill="none" strokeLinecap="round" strokeWidth={sw}>
+      {isDay
+        ? <circle cx={sunCx} cy={sunCy} r={sunR} />
+        : (
+          <path d={`M ${sunCx} ${sunCy - sunR} A ${sunR} ${sunR} 0 1 1 ${sunCx + sunR * 0.3} ${sunCy + sunR * 0.95} A ${sunR * 0.85} ${sunR * 0.85} 0 1 0 ${sunCx} ${sunCy - sunR}`} />
+        )
+      }
+      <CloudShape cx={cx + r * 0.2} cy={cy + r * 0.2} r={r * 0.55} sw={sw} c={c} />
+    </g>
+  );
+}
 
-    case "overcast":
-      return (
-        <g filter="url(#glow)">
-          <path d="M10 30h28M12 26h24c2 0 3.5-1.5 3.5-3.5S38 19 36 19h-1c-.5-4-3.5-7-7.5-7S21 15 20.5 19H20c-2 0-3.5 1.5-3.5 3.5S18 26 20 26z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.5" />
-          <path d="M8 36h32M10 32h28c2.5 0 4-2 4-4s-1.5-4-4-4h-1c-.5-4.5-4-8-8.5-8S22 20 21.5 24.5H21c-2.5 0-4 2-4 4s1.5 4 4 4z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.7" />
-        </g>
-      );
+// Cloud
+function CloudIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw} strokeLinecap="round">
+      <CloudShape cx={cx} cy={cy} r={r} sw={sw} c={c} />
+    </g>
+  );
+}
 
-    case "fog":
-      return (
-        <g filter="url(#glow)">
-          {[18, 24, 30, 36].map((y) => (
-            <line key={y} x1="8" y1={y} x2="40" y2={y} stroke={white} strokeWidth="1.5" strokeLinecap="round" opacity={0.3 + (y - 18) * 0.05} strokeDasharray="4 3" />
-          ))}
-        </g>
-      );
+// Reusable cloud shape
+function CloudShape({ cx, cy, r, sw, c }: IconBaseProps) {
+  const w = r * 1.9;
+  const h = r * 0.9;
+  return (
+    <path
+      stroke={c}
+      fill="none"
+      strokeWidth={sw}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d={`
+        M ${cx - w * 0.35} ${cy + h * 0.4}
+        Q ${cx - w * 0.55} ${cy + h * 0.4} ${cx - w * 0.5} ${cy}
+        Q ${cx - w * 0.5} ${cy - h * 0.6} ${cx - w * 0.1} ${cy - h * 0.5}
+        Q ${cx} ${cy - h} ${cx + w * 0.2} ${cy - h * 0.5}
+        Q ${cx + w * 0.55} ${cy - h * 0.5} ${cx + w * 0.5} ${cy}
+        Q ${cx + w * 0.55} ${cy + h * 0.4} ${cx + w * 0.35} ${cy + h * 0.4}
+        Z
+      `}
+    />
+  );
+}
 
-    case "drizzle":
-      return (
-        <g filter="url(#glow)">
-          <path d="M14 24h20c2 0 3-1.5 3-3s-1-3-3-3h-1c-.5-3.5-3-6-6.5-6S20 14.5 19.5 18H19c-2 0-3 1.5-3 3s1 3 3 3z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.6" />
-          {[18, 24, 30].map((x) => (
-            <line key={x} x1={x} y1="28" x2={x} y2="32" stroke={cyan} strokeWidth="1" strokeLinecap="round" opacity="0.6" />
-          ))}
-        </g>
-      );
+// Fog
+function FogIcon({ cx, cy, r, sw, c, s }: IconBaseProps & { s: number }) {
+  const lines = 3;
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw} strokeLinecap="round" opacity={0.9}>
+      {Array.from({ length: lines }).map((_, i) => {
+        const y = cy - r * 0.4 + i * r * 0.4;
+        const w = s * 0.5 - i * s * 0.06;
+        return <line key={i} x1={cx - w} y1={y} x2={cx + w} y2={y} />;
+      })}
+    </g>
+  );
+}
 
-    case "rain":
-      return (
-        <g filter="url(#glow)">
-          <path d="M12 22h24c2 0 3.5-1.5 3.5-3.5S38 15 36 15h-1c-.5-4-3.5-7-7.5-7S21 11 20.5 15H20c-2 0-3.5 1.5-3.5 3.5S18 22 20 22z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.6" />
-          {[16, 22, 28, 34].map((x, i) => (
-            <line key={x} x1={x} y1={26 + (i % 2) * 2} x2={x - 2} y2={33 + (i % 2) * 2} stroke={blue} strokeWidth="1.5" strokeLinecap="round" />
-          ))}
-        </g>
-      );
+// Drizzle
+function DrizzleIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw} strokeLinecap="round">
+      <CloudShape cx={cx} cy={cy - r * 0.2} r={r * 0.65} sw={sw} c={c} />
+      {[-r * 0.3, 0, r * 0.3].map((ox, i) => (
+        <line key={i} x1={cx + ox} y1={cy + r * 0.35} x2={cx + ox - r * 0.1} y2={cy + r * 0.65} strokeWidth={sw * 0.8} />
+      ))}
+    </g>
+  );
+}
 
-    case "snow":
-      return (
-        <g filter="url(#glow)">
-          <path d="M12 22h24c2 0 3.5-1.5 3.5-3.5S38 15 36 15h-1c-.5-4-3.5-7-7.5-7S21 11 20.5 15H20c-2 0-3.5 1.5-3.5 3.5S18 22 20 22z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.6" />
-          {[17, 24, 31].map((x) => (
-            <g key={x}>
-              <line x1={x - 3} y1="32" x2={x + 3} y2="32" stroke={white} strokeWidth="1" />
-              <line x1={x} y1="29" x2={x} y2="35" stroke={white} strokeWidth="1" />
-              <line x1={x - 2} y1="30" x2={x + 2} y2="34" stroke={white} strokeWidth="1" />
-              <line x1={x + 2} y1="30" x2={x - 2} y2="34" stroke={white} strokeWidth="1" />
-            </g>
-          ))}
-        </g>
-      );
+// Rain
+function RainIcon({ cx, cy, r, sw, c, heavy }: IconBaseProps & { heavy: boolean }) {
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw} strokeLinecap="round">
+      <CloudShape cx={cx} cy={cy - r * 0.25} r={r * 0.65} sw={sw} c={c} />
+      {(heavy ? [-r * 0.35, -r * 0.1, r * 0.15, r * 0.4] : [-r * 0.25, r * 0.05, r * 0.35]).map((ox, i) => (
+        <line key={i}
+          x1={cx + ox} y1={cy + r * 0.35}
+          x2={cx + ox - r * 0.15} y2={cy + r * 0.75}
+          strokeWidth={heavy ? sw : sw * 0.9}
+        />
+      ))}
+    </g>
+  );
+}
 
-    case "thunderstorm":
-      return (
-        <g filter="url(#glow)">
-          <path d="M12 20h24c2 0 3.5-1.5 3.5-3.5S38 13 36 13h-1c-.5-4-3.5-7-7.5-7S21 9 20.5 13H20c-2 0-3.5 1.5-3.5 3.5S18 20 20 20z" stroke={white} strokeWidth="1.5" fill="none" opacity="0.6" />
-          <path d="M22 22l-2 8h6l-3 10 8-12h-6l3-6z" stroke={amber} strokeWidth="1.5" fill={amber} fillOpacity="0.3" />
+// Snow
+function SnowIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw} strokeLinecap="round">
+      <CloudShape cx={cx} cy={cy - r * 0.2} r={r * 0.65} sw={sw} c={c} />
+      {[-r * 0.25, r * 0.1].map((ox, i) => (
+        <g key={i}>
+          <line x1={cx + ox} y1={cy + r * 0.4} x2={cx + ox} y2={cy + r * 0.72} />
+          <line x1={cx + ox - r * 0.12} y1={cy + r * 0.5} x2={cx + ox + r * 0.12} y2={cy + r * 0.5} />
+          <line x1={cx + ox - r * 0.1} y1={cy + r * 0.42} x2={cx + ox + r * 0.1} y2={cy + r * 0.7} />
+          <line x1={cx + ox + r * 0.1} y1={cy + r * 0.42} x2={cx + ox - r * 0.1} y2={cy + r * 0.7} />
         </g>
-      );
+      ))}
+    </g>
+  );
+}
 
-    default:
-      return (
-        <circle cx="24" cy="24" r="8" stroke={cyan} strokeWidth="1.5" fill="none" />
-      );
-  }
+// Showers (sun + rain)
+function ShowersIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  return (
+    <g stroke={c} fill="none" strokeWidth={sw} strokeLinecap="round">
+      <circle cx={cx - r * 0.3} cy={cy - r * 0.3} r={r * 0.38} />
+      <CloudShape cx={cx + r * 0.15} cy={cy + r * 0.05} r={r * 0.55} sw={sw} c={c} />
+      {[-r * 0.15, r * 0.2].map((ox, i) => (
+        <line key={i} x1={cx + ox} y1={cy + r * 0.55} x2={cx + ox - r * 0.12} y2={cy + r * 0.8} />
+      ))}
+    </g>
+  );
+}
+
+// Thunderstorm
+function ThunderstormIcon({ cx, cy, r, sw, c }: IconBaseProps) {
+  return (
+    <g strokeLinecap="round" strokeLinejoin="round">
+      <CloudShape cx={cx} cy={cy - r * 0.25} r={r * 0.65} sw={sw} c={c} />
+      {/* Lightning bolt */}
+      <path
+        stroke="#ffb800"
+        fill="none"
+        strokeWidth={sw * 1.2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        d={`M ${cx + r * 0.1} ${cy + r * 0.3} L ${cx - r * 0.1} ${cy + r * 0.55} L ${cx + r * 0.05} ${cy + r * 0.55} L ${cx - r * 0.15} ${cy + r * 0.85}`}
+        style={{ filter: 'drop-shadow(0 0 4px #ffb800)' }}
+      />
+    </g>
+  );
+}
+
+interface IconBaseProps {
+  cx: number;
+  cy: number;
+  r: number;
+  sw: number;
+  c: string;
 }

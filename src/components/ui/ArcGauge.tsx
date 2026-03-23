@@ -1,98 +1,97 @@
-"use client";
+'use client';
 
 interface ArcGaugeProps {
-  value: number;
-  max: number;
-  label: string;
-  unit?: string;
+  value: number;       // 0-100
+  size?: number;       // px diameter
   color?: string;
-  size?: number;
+  trackColor?: string;
+  strokeWidth?: number;
+  label?: string;
+  unit?: string;
+  showValue?: boolean;
+  startAngle?: number; // degrees, default -210
+  endAngle?: number;   // degrees, default 30
 }
 
-/**
- * Radial arc gauge with neon glow.
- */
 export function ArcGauge({
   value,
-  max,
+  size = 80,
+  color = '#00fff2',
+  trackColor = 'rgba(0,255,242,0.1)',
+  strokeWidth = 6,
   label,
-  unit = "",
-  color = "#00fff2",
-  size = 100,
+  unit = '',
+  showValue = true,
+  startAngle = -210,
+  endAngle = 30,
 }: ArcGaugeProps) {
-  const percentage = Math.min(value / max, 1);
-  const radius = (size - 16) / 2;
+  const r = (size - strokeWidth * 2) / 2;
   const cx = size / 2;
   const cy = size / 2;
-  const startAngle = 135;
-  const totalAngle = 270;
-  const endAngle = startAngle + totalAngle * percentage;
+  const totalAngle = endAngle - startAngle; // typically 240°
+  const clampedValue = Math.min(100, Math.max(0, value));
+  const filledAngle = (clampedValue / 100) * totalAngle;
 
-  const toRad = (deg: number) => (deg * Math.PI) / 180;
-  const arcStart = {
-    x: cx + radius * Math.cos(toRad(startAngle)),
-    y: cy + radius * Math.sin(toRad(startAngle)),
-  };
-  const arcEnd = {
-    x: cx + radius * Math.cos(toRad(endAngle)),
-    y: cy + radius * Math.sin(toRad(endAngle)),
-  };
-  const bgEnd = {
-    x: cx + radius * Math.cos(toRad(startAngle + totalAngle)),
-    y: cy + radius * Math.sin(toRad(startAngle + totalAngle)),
-  };
-  const largeArc = totalAngle * percentage > 180 ? 1 : 0;
+  function polarToCart(angleDeg: number, radius: number) {
+    const rad = ((angleDeg - 90) * Math.PI) / 180;
+    return {
+      x: cx + radius * Math.cos(rad),
+      y: cy + radius * Math.sin(rad),
+    };
+  }
 
-  const bgPath = `M ${arcStart.x} ${arcStart.y} A ${radius} ${radius} 0 1 1 ${bgEnd.x} ${bgEnd.y}`;
-  const valuePath = percentage > 0
-    ? `M ${arcStart.x} ${arcStart.y} A ${radius} ${radius} 0 ${largeArc} 1 ${arcEnd.x} ${arcEnd.y}`
-    : "";
+  function describeArc(start: number, end: number, radius: number) {
+    const s = polarToCart(start, radius);
+    const e = polarToCart(end, radius);
+    const largeArc = end - start > 180 ? 1 : 0;
+    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${largeArc} 1 ${e.x} ${e.y}`;
+  }
+
+  const trackPath = describeArc(startAngle, endAngle, r);
+  const fillPath = filledAngle > 0
+    ? describeArc(startAngle, startAngle + filledAngle, r)
+    : '';
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center gap-1">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
+        {/* Track */}
         <path
-          d={bgPath}
+          d={trackPath}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
-          strokeWidth="4"
+          stroke={trackColor}
+          strokeWidth={strokeWidth}
           strokeLinecap="round"
         />
-        {valuePath && (
+        {/* Fill */}
+        {fillPath && (
           <path
-            d={valuePath}
+            d={fillPath}
             fill="none"
             stroke={color}
-            strokeWidth="4"
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
-            style={{
-              filter: `drop-shadow(0 0 4px ${color})`,
-            }}
+            style={{ filter: `drop-shadow(0 0 4px ${color})` }}
           />
         )}
-        <text
-          x={cx}
-          y={cy - 2}
-          textAnchor="middle"
-          dominantBaseline="middle"
-          fill={color}
-          fontSize={size * 0.22}
-          fontFamily="var(--font-mono)"
-        >
-          {Math.round(value)}
-          {unit}
-        </text>
-        <text
-          x={cx}
-          y={cy + size * 0.16}
-          textAnchor="middle"
-          fill="#8888aa"
-          fontSize={size * 0.11}
-          fontFamily="var(--font-sans)"
-        >
-          {label}
-        </text>
+        {/* Value text */}
+        {showValue && (
+          <text
+            x={cx}
+            y={cy + 4}
+            textAnchor="middle"
+            fontSize={size * 0.22}
+            fontFamily="'JetBrains Mono', monospace"
+            fill={color}
+            style={{ filter: `drop-shadow(0 0 4px ${color})` }}
+          >
+            {Math.round(clampedValue)}{unit}
+          </text>
+        )}
       </svg>
+      {label && (
+        <span className="sg-label text-center leading-tight">{label}</span>
+      )}
     </div>
   );
 }

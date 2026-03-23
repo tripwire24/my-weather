@@ -1,68 +1,77 @@
-"use client";
+'use client';
 
 interface SparklineProps {
   data: number[];
   width?: number;
   height?: number;
   color?: string;
-  filled?: boolean;
-  className?: string;
+  fillColor?: string;
+  strokeWidth?: number;
+  showDots?: boolean;
+  highlightIndex?: number; // highlight a specific point
 }
 
-/**
- * Mini sparkline chart for inline data visualization.
- */
 export function Sparkline({
   data,
   width = 200,
   height = 40,
-  color = "#00fff2",
-  filled = true,
-  className = "",
+  color = '#00fff2',
+  fillColor,
+  strokeWidth = 1.5,
+  showDots = false,
+  highlightIndex,
 }: SparklineProps) {
-  if (data.length < 2) return null;
+  if (!data || data.length < 2) return null;
 
   const min = Math.min(...data);
   const max = Math.max(...data);
   const range = max - min || 1;
-  const padding = 2;
+  const pad = 4;
 
-  const points = data.map((value, i) => {
-    const x = padding + (i / (data.length - 1)) * (width - padding * 2);
-    const y =
-      height - padding - ((value - min) / range) * (height - padding * 2);
-    return { x, y };
-  });
+  const points = data.map((v, i) => ({
+    x: pad + (i / (data.length - 1)) * (width - pad * 2),
+    y: pad + ((1 - (v - min) / range) * (height - pad * 2)),
+  }));
 
-  const linePath = points
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x} ${p.y}`)
-    .join(" ");
+  const pathD = points
+    .map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(' ');
 
-  const fillPath = `${linePath} L ${points[points.length - 1].x} ${height} L ${points[0].x} ${height} Z`;
+  const fillD = fillColor
+    ? `${pathD} L ${points[points.length - 1].x} ${height - pad} L ${points[0].x} ${height - pad} Z`
+    : null;
 
   return (
-    <svg
-      width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
-      className={className}
-    >
-      {filled && (
+    <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} overflow="visible">
+      {/* Fill area */}
+      {fillD && (
         <path
-          d={fillPath}
-          fill={color}
-          fillOpacity="0.1"
+          d={fillD}
+          fill={fillColor}
+          opacity={0.15}
         />
       )}
+      {/* Line */}
       <path
-        d={linePath}
+        d={pathD}
         fill="none"
         stroke={color}
-        strokeWidth="1.5"
-        strokeLinejoin="round"
+        strokeWidth={strokeWidth}
         strokeLinecap="round"
+        strokeLinejoin="round"
         style={{ filter: `drop-shadow(0 0 3px ${color})` }}
       />
+      {/* Dots */}
+      {showDots && points.map((p, i) => (
+        <circle
+          key={i}
+          cx={p.x}
+          cy={p.y}
+          r={i === highlightIndex ? 3 : 1.5}
+          fill={i === highlightIndex ? '#fff' : color}
+          style={i === highlightIndex ? { filter: `drop-shadow(0 0 4px ${color})` } : undefined}
+        />
+      ))}
     </svg>
   );
 }

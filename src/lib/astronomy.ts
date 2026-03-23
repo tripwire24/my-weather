@@ -1,240 +1,194 @@
 /**
- * Astronomy calculations for moon phases, solstices, equinoxes.
- * Algorithms are approximations suitable for a weather dashboard.
+ * Astronomy calculations for StormGrid.
+ * Moon phase, equinox/solstice dates, golden hour, blue hour.
  */
 
-/** Moon phase calculation using Conway's method */
-export function getMoonPhase(date: Date): {
-  phase: number; // 0-1 where 0 = new moon, 0.5 = full moon
-  name: string;
-  illumination: number;
-} {
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-
-  // Simplified lunar phase calculation
-  let c = 0;
-  let e = 0;
-  let jd = 0;
-  let b = 0;
-
-  if (month < 3) {
-    c = year - 1;
-    e = month + 12;
-  } else {
-    c = year;
-    e = month;
-  }
-
-  jd =
-    Math.floor(365.25 * (c + 4716)) +
-    Math.floor(30.6001 * (e + 1)) +
-    day -
-    1524.5;
-
-  // Days since known new moon (Jan 6, 2000 18:14 UTC)
-  const daysSinceNew = jd - 2451550.1;
-  const synodicMonth = 29.53058868;
-  const newMoons = daysSinceNew / synodicMonth;
-  const phase = newMoons - Math.floor(newMoons);
-
-  // Moon phase illumination (approximate)
-  const illumination = Math.round((1 - Math.cos(phase * 2 * Math.PI)) * 50);
-
-  // Phase name
-  let name: string;
-  if (phase < 0.0625) name = "New Moon";
-  else if (phase < 0.1875) name = "Waxing Crescent";
-  else if (phase < 0.3125) name = "First Quarter";
-  else if (phase < 0.4375) name = "Waxing Gibbous";
-  else if (phase < 0.5625) name = "Full Moon";
-  else if (phase < 0.6875) name = "Waning Gibbous";
-  else if (phase < 0.8125) name = "Last Quarter";
-  else if (phase < 0.9375) name = "Waning Crescent";
-  else name = "New Moon";
-
-  return { phase, name, illumination };
+export interface MoonPhaseResult {
+  phase: number;       // 0-1 (0/1 = new, 0.25 = first quarter, 0.5 = full, 0.75 = last quarter)
+  phaseName: string;
+  illumination: number; // 0-100
+  nextFullMoon: string; // ISO date
+  nextNewMoon: string;  // ISO date
 }
 
-/** Find next occurrence of a specific moon phase */
-export function getNextMoonPhaseDate(
-  targetPhase: "new" | "full",
-  after: Date
-): Date {
-  const target = targetPhase === "new" ? 0 : 0.5;
-  const synodicMonth = 29.53058868;
-  const date = new Date(after);
+// Compute moon phase for a given date
+export function getMoonPhase(date: Date): MoonPhaseResult {
+  // Known new moon reference: 2000-01-06 18:14 UTC
+  const KNOWN_NEW_MOON = new Date('2000-01-06T18:14:00Z').getTime();
+  const SYNODIC_MONTH = 29.53058867 * 24 * 3600 * 1000; // ms
 
-  // Search day by day for up to 30 days
-  for (let i = 1; i <= 31; i++) {
-    date.setDate(date.getDate() + 1);
-    const { phase } = getMoonPhase(date);
-    const dist = Math.abs(phase - target);
-    if (dist < 0.02 || (target === 0 && (phase > 0.98 || phase < 0.02))) {
-      return date;
-    }
-  }
+  const elapsed = date.getTime() - KNOWN_NEW_MOON;
+  const phase = ((elapsed % SYNODIC_MONTH) + SYNODIC_MONTH) % SYNODIC_MONTH / SYNODIC_MONTH;
 
-  // Fallback: approximate
-  const current = getMoonPhase(after);
-  let daysToTarget: number;
-  if (targetPhase === "new") {
-    daysToTarget =
-      current.phase < 0.02
-        ? synodicMonth
-        : (1 - current.phase) * synodicMonth;
-  } else {
-    daysToTarget =
-      current.phase < 0.5
-        ? (0.5 - current.phase) * synodicMonth
-        : (1.5 - current.phase) * synodicMonth;
-  }
+  // Illumination approximation
+  const illumination = Math.round((1 - Math.cos(2 * Math.PI * phase)) / 2 * 100);
 
-  const result = new Date(after);
-  result.setDate(result.getDate() + Math.round(daysToTarget));
-  return result;
-}
+  const phaseName = getPhaseName(phase);
 
-/** Approximate moonrise/moonset times (very rough estimation) */
-export function getMoonTimes(
-  date: Date,
-  latitude: number
-): { moonrise: string; moonset: string } {
-  const { phase } = getMoonPhase(date);
-  // Moon rises ~50 min later each day, new moon rises with sun
-  const sunriseHour = 6; // approximate
-  const riseHour = (sunriseHour + phase * 24) % 24;
-  const setHour = (riseHour + 12) % 24;
+  // Next full moon
+  const fullMoonPhase = 0.5;
+  let phaseToFull = fullMoonPhase - phase;
+  if (phaseToFull <= 0.01) phaseToFull += 1;
+  const nextFullMoon = new Date(date.getTime() + phaseToFull * SYNODIC_MONTH);
 
-  const rise = new Date(date);
-  rise.setHours(Math.floor(riseHour), Math.round((riseHour % 1) * 60), 0, 0);
-
-  const set = new Date(date);
-  set.setHours(Math.floor(setHour), Math.round((setHour % 1) * 60), 0, 0);
+  // Next new moon
+  let phaseToNew = 1 - phase;
+  if (phase < 0.01) phaseToNew = 1;
+  if (phaseToNew <= 0.01) phaseToNew += 1;
+  const nextNewMoon = new Date(date.getTime() + phaseToNew * SYNODIC_MONTH);
 
   return {
-    moonrise: rise.toISOString(),
-    moonset: set.toISOString(),
+    phase,
+    phaseName,
+    illumination,
+    nextFullMoon: nextFullMoon.toISOString().split('T')[0],
+    nextNewMoon: nextNewMoon.toISOString().split('T')[0],
   };
 }
 
-/** Calculate golden hour and blue hour from sunrise/sunset */
-export function getGoldenBlueHours(
-  sunrise: string,
-  sunset: string
-): {
-  goldenHourMorning: { start: string; end: string };
-  goldenHourEvening: { start: string; end: string };
-  blueHourMorning: { start: string; end: string };
-  blueHourEvening: { start: string; end: string };
-} {
-  const rise = new Date(sunrise);
-  const set = new Date(sunset);
-
-  // Golden hour: first/last hour of sunlight
-  const goldenMorningEnd = new Date(rise.getTime() + 60 * 60 * 1000);
-  const goldenEveningStart = new Date(set.getTime() - 60 * 60 * 1000);
-
-  // Blue hour: ~20-30 min before sunrise / after sunset
-  const blueMorningStart = new Date(rise.getTime() - 30 * 60 * 1000);
-  const blueMorningEnd = new Date(rise.getTime());
-  const blueEveningStart = new Date(set.getTime());
-  const blueEveningEnd = new Date(set.getTime() + 30 * 60 * 1000);
-
-  return {
-    goldenHourMorning: {
-      start: rise.toISOString(),
-      end: goldenMorningEnd.toISOString(),
-    },
-    goldenHourEvening: {
-      start: goldenEveningStart.toISOString(),
-      end: set.toISOString(),
-    },
-    blueHourMorning: {
-      start: blueMorningStart.toISOString(),
-      end: blueMorningEnd.toISOString(),
-    },
-    blueHourEvening: {
-      start: blueEveningStart.toISOString(),
-      end: blueEveningEnd.toISOString(),
-    },
-  };
+function getPhaseName(phase: number): string {
+  if (phase < 0.02 || phase > 0.98) return 'New Moon';
+  if (phase < 0.23) return 'Waxing Crescent';
+  if (phase < 0.27) return 'First Quarter';
+  if (phase < 0.48) return 'Waxing Gibbous';
+  if (phase < 0.52) return 'Full Moon';
+  if (phase < 0.73) return 'Waning Gibbous';
+  if (phase < 0.77) return 'Last Quarter';
+  return 'Waning Crescent';
 }
 
-/** Get equinox and solstice dates for the current year (Southern Hemisphere aware) */
-export function getSeasonalDates(year: number) {
-  // Approximate dates (these shift by ~6 hours each year)
-  // These are UTC dates — good enough for a dashboard
-  return {
-    marchEquinox: new Date(year, 2, 20, 12), // ~Mar 20
-    juneSolstice: new Date(year, 5, 21, 12), // ~Jun 21
-    septemberEquinox: new Date(year, 8, 23, 12), // ~Sep 23
-    decemberSolstice: new Date(year, 11, 21, 12), // ~Dec 21
-  };
+// Equinox/Solstice dates for a given year (approximate)
+export interface SeasonalEvent {
+  date: string;    // ISO date
+  type: 'spring-equinox' | 'summer-solstice' | 'autumn-equinox' | 'winter-solstice';
+  label: string;
 }
 
-/** Get current season for Southern Hemisphere (New Zealand) */
-export function getCurrentSeason(date: Date): {
-  name: string;
-  daysRemaining: number;
-  nextSeason: string;
-  nextSeasonDate: Date;
-} {
-  const year = date.getFullYear();
-  const dates = getSeasonalDates(year);
-  const nextYearDates = getSeasonalDates(year + 1);
+export function getSeasonalEvents(year: number, southernHemisphere = true): SeasonalEvent[] {
+  // Approximate dates (mid-month values vary ±1-2 days)
+  const y = year - 2000;
 
-  // Southern Hemisphere seasons
-  const seasons = [
-    { name: "Summer", start: getSeasonalDates(year - 1).decemberSolstice, end: dates.marchEquinox, next: "Autumn", nextDate: dates.marchEquinox },
-    { name: "Autumn", start: dates.marchEquinox, end: dates.juneSolstice, next: "Winter", nextDate: dates.juneSolstice },
-    { name: "Winter", start: dates.juneSolstice, end: dates.septemberEquinox, next: "Spring", nextDate: dates.septemberEquinox },
-    { name: "Spring", start: dates.septemberEquinox, end: dates.decemberSolstice, next: "Summer", nextDate: dates.decemberSolstice },
-    { name: "Summer", start: dates.decemberSolstice, end: nextYearDates.marchEquinox, next: "Autumn", nextDate: nextYearDates.marchEquinox },
+  // Jean Meeus simplified formulas (spring equinox northern = Sep equinox southern spring)
+  const marchEquinox   = new Date(`${year}-03-20T00:00:00Z`);
+  const juneSolstice   = new Date(`${year}-06-21T00:00:00Z`);
+  const septEquinox    = new Date(`${year}-09-23T00:00:00Z`);
+  const decSolstice    = new Date(`${year}-12-21T00:00:00Z`);
+
+  // Fine-tune with a simple correction (days from J2000.0)
+  marchEquinox.setDate(marchEquinox.getDate() + Math.round(y * 0.0001));
+  juneSolstice.setDate(juneSolstice.getDate() + Math.round(y * 0.0001));
+  septEquinox.setDate(septEquinox.getDate() + Math.round(y * 0.0001));
+  decSolstice.setDate(decSolstice.getDate() + Math.round(y * 0.0001));
+
+  if (southernHemisphere) {
+    return [
+      { date: marchEquinox.toISOString().split('T')[0], type: 'autumn-equinox', label: 'Autumn Equinox' },
+      { date: juneSolstice.toISOString().split('T')[0], type: 'winter-solstice', label: 'Winter Solstice' },
+      { date: septEquinox.toISOString().split('T')[0], type: 'spring-equinox', label: 'Spring Equinox' },
+      { date: decSolstice.toISOString().split('T')[0], type: 'summer-solstice', label: 'Summer Solstice' },
+    ];
+  }
+
+  return [
+    { date: marchEquinox.toISOString().split('T')[0], type: 'spring-equinox', label: 'Spring Equinox' },
+    { date: juneSolstice.toISOString().split('T')[0], type: 'summer-solstice', label: 'Summer Solstice' },
+    { date: septEquinox.toISOString().split('T')[0], type: 'autumn-equinox', label: 'Autumn Equinox' },
+    { date: decSolstice.toISOString().split('T')[0], type: 'winter-solstice', label: 'Winter Solstice' },
   ];
+}
 
-  for (const s of seasons) {
-    if (date >= s.start && date < s.end) {
-      const daysRemaining = Math.ceil(
-        (s.end.getTime() - date.getTime()) / (1000 * 60 * 60 * 24)
-      );
-      return {
-        name: s.name,
-        daysRemaining,
-        nextSeason: s.next,
-        nextSeasonDate: s.nextDate,
-      };
+export function getCurrentSeason(date: Date, southernHemisphere = true): {
+  season: 'Spring' | 'Summer' | 'Autumn' | 'Winter';
+  daysRemaining: number;
+} {
+  const year = date.getFullYear();
+  const events = getSeasonalEvents(year, southernHemisphere);
+  const nextYearEvents = getSeasonalEvents(year + 1, southernHemisphere);
+  const allEvents = [...events, ...nextYearEvents].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
+
+  // Find current season based on which event we're after
+  let currentSeason: 'Spring' | 'Summer' | 'Autumn' | 'Winter' = 'Spring';
+  let nextEventDate = new Date();
+
+  for (let i = 0; i < allEvents.length - 1; i++) {
+    const eventDate = new Date(allEvents[i].date);
+    const nextDate = new Date(allEvents[i + 1].date);
+    if (date >= eventDate && date < nextDate) {
+      nextEventDate = nextDate;
+      // Season is defined by what started at this event
+      const type = allEvents[i].type;
+      if (type === 'spring-equinox') currentSeason = 'Spring';
+      else if (type === 'summer-solstice') currentSeason = 'Summer';
+      else if (type === 'autumn-equinox') currentSeason = 'Autumn';
+      else if (type === 'winter-solstice') currentSeason = 'Winter';
+      break;
     }
   }
 
-  // Fallback
+  const daysRemaining = Math.ceil(
+    (nextEventDate.getTime() - date.getTime()) / 86400000
+  );
+
+  return { season: currentSeason, daysRemaining };
+}
+
+export function getNextSeasonalEvent(date: Date, southernHemisphere = true): {
+  next: SeasonalEvent;
+  daysUntil: number;
+  afterNext: SeasonalEvent;
+} {
+  const year = date.getFullYear();
+  const events = [
+    ...getSeasonalEvents(year, southernHemisphere),
+    ...getSeasonalEvents(year + 1, southernHemisphere),
+  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const futureEvents = events.filter(e => new Date(e.date) > date);
+  const next = futureEvents[0];
+  const afterNext = futureEvents[1];
+  const daysUntil = Math.ceil((new Date(next.date).getTime() - date.getTime()) / 86400000);
+
+  return { next, daysUntil, afterNext };
+}
+
+// Golden hour / Blue hour from sunrise/sunset
+export interface SolarTimes {
+  goldenHourMorningEnd: string;   // ~1h after sunrise
+  blueHourMorningStart: string;   // ~30min before sunrise
+  goldenHourEveningStart: string; // ~1h before sunset
+  blueHourEveningEnd: string;     // ~30min after sunset
+  solarNoon: string;
+}
+
+export function getSolarTimes(sunriseISO: string, sunsetISO: string): SolarTimes {
+  const sunrise = new Date(sunriseISO);
+  const sunset = new Date(sunsetISO);
+
+  const goldenHourMorningEnd = new Date(sunrise.getTime() + 60 * 60 * 1000);
+  const blueHourMorningStart = new Date(sunrise.getTime() - 30 * 60 * 1000);
+  const goldenHourEveningStart = new Date(sunset.getTime() - 60 * 60 * 1000);
+  const blueHourEveningEnd = new Date(sunset.getTime() + 30 * 60 * 1000);
+  const solarNoon = new Date((sunrise.getTime() + sunset.getTime()) / 2);
+
   return {
-    name: "Summer",
-    daysRemaining: 0,
-    nextSeason: "Autumn",
-    nextSeasonDate: dates.marchEquinox,
+    goldenHourMorningEnd: goldenHourMorningEnd.toISOString(),
+    blueHourMorningStart: blueHourMorningStart.toISOString(),
+    goldenHourEveningStart: goldenHourEveningStart.toISOString(),
+    blueHourEveningEnd: blueHourEveningEnd.toISOString(),
+    solarNoon: solarNoon.toISOString(),
   };
 }
 
-/** Calculate day length in minutes from sunrise/sunset ISO strings */
-export function getDayLength(sunrise: string, sunset: string): number {
-  const rise = new Date(sunrise);
-  const set = new Date(sunset);
-  return Math.round((set.getTime() - rise.getTime()) / 60000);
-}
+// Sun position in arc (0 = sunrise, 0.5 = solar noon, 1 = sunset)
+export function getSunArcPosition(sunriseISO: string, sunsetISO: string, now = new Date()): number {
+  const sunrise = new Date(sunriseISO).getTime();
+  const sunset = new Date(sunsetISO).getTime();
+  const current = now.getTime();
 
-/** Format day length as "Xh Ym" */
-export function formatDayLength(minutes: number): string {
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return `${h}h ${m}m`;
-}
+  if (current <= sunrise) return 0;
+  if (current >= sunset) return 1;
 
-/** Get solar noon (midpoint between sunrise and sunset) */
-export function getSolarNoon(sunrise: string, sunset: string): string {
-  const rise = new Date(sunrise);
-  const set = new Date(sunset);
-  const noon = new Date((rise.getTime() + set.getTime()) / 2);
-  return noon.toISOString();
+  return (current - sunrise) / (sunset - sunrise);
 }

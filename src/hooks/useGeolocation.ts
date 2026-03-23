@@ -1,93 +1,128 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback } from "react";
-import type { Coordinates, LocationInfo } from "@/types/weather";
-import { reverseGeocode } from "@/lib/openmeteo";
-import { LOCATION_KEY } from "@/lib/constants";
+import { useState, useEffect } from 'react';
+import type { Location } from '@/types/weather';
+import { STORAGE_KEYS } from '@/lib/constants';
 
 interface GeolocationState {
-  location: LocationInfo | null;
+  location: Location | null;
   loading: boolean;
   error: string | null;
+  requestPermission: () => void;
 }
 
-export function useGeolocation() {
-  const [state, setState] = useState<GeolocationState>({
-    location: null,
-    loading: true,
-    error: null,
-  });
+export function useGeolocation(): GeolocationState {
+  const [location, setLocation] = useState<Location | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const setLocation = useCallback((location: LocationInfo) => {
-    setState({ location, loading: false, error: null });
+  // Load stored location on mount
+  useEffect(() => {
     try {
-      localStorage.setItem(LOCATION_KEY, JSON.stringify(location));
-    } catch {
-      // localStorage might be unavailable
-    }
+      const stored = localStorage.getItem(STORAGE_KEYS.LOCATION);
+      if (stored) {
+        setLocation(JSON.parse(stored));
+      }
+    } catch {}
   }, []);
 
-  const requestGeolocation = useCallback(async () => {
-    setState((prev) => ({ ...prev, loading: true, error: null }));
-
+  const requestPermission = () => {
     if (!navigator.geolocation) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: "Geolocation not supported",
-      }));
+      setError('Geolocation is not supported by your browser');
       return;
     }
 
-    try {
-      const position = await new Promise<GeolocationPosition>(
-        (resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject, {
-            enableHighAccuracy: false,
-            timeout: 10000,
-            maximumAge: 300000,
+    setLoading(true);
+    setError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        // Set location immediately with coordinates so weather can start loading
+        const coordName = `${latitude.toFixed(2)}, ${longitude.toFixed(2)}`;
+        const loc: Location = {
+          name: coordName,
+          latitude,
+          longitude,
+          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        };
+        setLocation(loc);
+        localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(loc));
+        setLoading(false);
+
+        // Resolve a proper place name in the background (non-blocking)
+        reverseGeocode(latitude, longitude)
+          .then((name) => {
+            const namedLoc: Location = { ...loc, name };
+            setLocation(namedLoc);
+            localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(namedLoc));
+          })
+          .catch(() => {
+            // Keep coordinate-based name, no problem
           });
+      },
+      (err) => {
+        setLoading(false);
+        switch (err.code) {
+          case err.PERMISSION_DENIED:
+            setError('Location permission denied. Please search for a location manually.');
+            break;
+          case err.POSITION_UNAVAILABLE:
+            setError('Location unavailable. Please try again.');
+            break;
+          case err.TIMEOUT:
+            setError('Location request timed out. Please try again.');
+            break;
+          default:
+            setError('Unable to get location.');
         }
-      );
-
-      const coords: Coordinates = {
-        latitude: position.coords.latitude,
-        longitude: position.coords.longitude,
-      };
-
-      const locationInfo = await reverseGeocode(coords);
-      setLocation(locationInfo);
-    } catch (err) {
-      const message =
-        err instanceof GeolocationPositionError
-          ? err.code === 1
-            ? "Location permission denied"
-            : "Unable to determine location"
-          : "Location lookup failed";
-
-      setState((prev) => ({ ...prev, loading: false, error: message }));
-    }
-  }, [setLocation]);
-
-  // Load saved location or request geolocation on mount
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LOCATION_KEY);
-      if (saved) {
-        const location = JSON.parse(saved) as LocationInfo;
-        setState({ location, loading: false, error: null });
-        return;
-      }
-    } catch {
-      // Fall through to geolocation
-    }
-
-    requestGeolocation();
-  }, [requestGeolocation]);
-
-  return {
-    ...state,
-    setLocation,
-    requestGeolocation,
+      },
+      { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
+    );
   };
+
+  // Auto-request on mount if no stored location
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEYS.LOCATION);
+    if (!stored) {
+      requestPermission();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  return { location, loading, error, requestPermission };
+}
+
+async function reverseGeocode(lat: number, lon: number): Promise<string> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 3000);
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json&zoom=14`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'StormGrid/1.0' }, signal: controller.signal }
+    );
+    if (!res.ok) throw new Error('Geocoding failed');
+    const data = await res.json();
+    const addr = data.address ?? {};
+
+    const localName =
+      addr.neighbourhood ??
+      addr.suburb ??
+      addr.quarter ??
+      addr.village ??
+      addr.hamlet ??
+      addr.town ??
+      addr.city_district ??
+      addr.city ??
+      addr.municipality ??
+      addr.county ??
+      addr.state_district ??
+      addr.state ??
+      null;
+
+    if (!localName) throw new Error('No place name in response');
+    return localName;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 }

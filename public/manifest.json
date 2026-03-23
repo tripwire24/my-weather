@@ -1,12 +1,15 @@
 {
-  "name": "StormGrid Weather",
+  "name": "StormGrid",
   "short_name": "StormGrid",
-  "description": "Futuristic weather dashboard PWA",
+  "description": "Futuristic Tron-inspired weather dashboard PWA",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "orientation": "portrait-primary",
   "background_color": "#0a0a0f",
   "theme_color": "#0a0a0f",
-  "orientation": "portrait-primary",
+  "lang": "en-NZ",
+  "categories": ["weather", "utilities"],
   "icons": [
     {
       "src": "/icons/icon-192.svg",
@@ -18,19 +21,23 @@
       "src": "/icons/icon-512.svg",
       "sizes": "512x512",
       "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.svg",
+      "sizes": "180x180",
+      "type": "image/svg+xml",
       "purpose": "any"
-    },
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
     {
-      "src": "/icons/icon-maskable-192.svg",
-      "sizes": "192x192",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
-    },
-    {
-      "src": "/icons/icon-maskable-512.svg",
-      "sizes": "512x512",
-      "type": "image/svg+xml",
-      "purpose": "maskable"
+      "name": "Current Weather",
+      "short_name": "Weather",
+      "description": "Open StormGrid weather dashboard",
+      "url": "/",
+      "icons": [{ "src": "/icons/icon-192.svg", "sizes": "192x192" }]
     }
   ]
 }

@@ -1,114 +1,110 @@
-"use client";
+'use client';
 
-import { useState, useEffect, useCallback, useRef } from "react";
-import type { WeatherData, LocationInfo } from "@/types/weather";
-import { fetchWeatherData } from "@/lib/openmeteo";
-import {
-  CACHE_KEY,
-  REFRESH_INTERVAL_MS,
-  STALE_THRESHOLD_MS,
-} from "@/lib/constants";
+import { useState, useEffect, useCallback } from 'react';
+import type { WeatherData, WeatherState, Location } from '@/types/weather';
+import { fetchWeather } from '@/lib/openmeteo';
+import { STORAGE_KEYS, STALE_THRESHOLD_MS } from '@/lib/constants';
 
-interface WeatherState {
-  data: WeatherData | null;
-  loading: boolean;
-  error: string | null;
-  isStale: boolean;
-}
-
-export function useWeatherData(location: LocationInfo | null) {
+export function useWeatherData(location: Location | null): WeatherState & {
+  refresh: () => void;
+} {
   const [state, setState] = useState<WeatherState>({
     data: null,
-    loading: !!location,
+    loading: false,
     error: null,
     isStale: false,
+    lastUpdated: null,
   });
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const staleCheckRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const refresh = useCallback(async () => {
-    if (!location) return;
+  const checkStale = useCallback((fetchedAt: string) => {
+    return Date.now() - new Date(fetchedAt).getTime() > STALE_THRESHOLD_MS;
+  }, []);
 
-    setState((prev) => ({ ...prev, loading: !prev.data, error: null }));
-
+  const loadFromCache = useCallback((): WeatherData | null => {
     try {
-      const data = await fetchWeatherData(location.coordinates, location);
-      setState({ data, loading: false, error: null, isStale: false });
-
-      try {
-        localStorage.setItem(CACHE_KEY, JSON.stringify(data));
-      } catch {
-        // Storage full or unavailable
+      const cached = localStorage.getItem(STORAGE_KEYS.WEATHER_CACHE);
+      if (!cached) return null;
+      const data: WeatherData = JSON.parse(cached);
+      // Only use cache if location matches
+      if (
+        location &&
+        Math.abs(data.location.latitude - location.latitude) < 0.1 &&
+        Math.abs(data.location.longitude - location.longitude) < 0.1
+      ) {
+        return data;
       }
-    } catch (err) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: err instanceof Error ? err.message : "Failed to fetch weather",
-      }));
-    }
+    } catch {}
+    return null;
   }, [location]);
 
-  // Load cached data on mount
-  useEffect(() => {
+  const saveToCache = useCallback((data: WeatherData) => {
     try {
-      const cached = localStorage.getItem(CACHE_KEY);
-      if (cached) {
-        const data = JSON.parse(cached) as WeatherData;
-        const isStale = Date.now() - data.fetchedAt > STALE_THRESHOLD_MS;
-        setState({ data, loading: false, error: null, isStale });
-      }
-    } catch {
-      // No cache available
-    }
+      localStorage.setItem(STORAGE_KEYS.WEATHER_CACHE, JSON.stringify(data));
+      localStorage.setItem(STORAGE_KEYS.LAST_FETCHED, data.fetchedAt);
+    } catch {}
   }, []);
 
-  // Fetch when location changes
-  useEffect(() => {
-    if (location) {
-      refresh();
-    }
-  }, [location, refresh]);
+  const fetch = useCallback(async () => {
+    if (!location) return;
 
-  // Auto-refresh interval
-  useEffect(() => {
-    intervalRef.current = setInterval(refresh, REFRESH_INTERVAL_MS);
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [refresh]);
+    setState(prev => ({ ...prev, loading: true, error: null }));
 
-  // Stale check
-  useEffect(() => {
-    staleCheckRef.current = setInterval(() => {
-      setState((prev) => {
-        if (!prev.data) return prev;
-        const isStale = Date.now() - prev.data.fetchedAt > STALE_THRESHOLD_MS;
-        if (isStale !== prev.isStale) return { ...prev, isStale };
-        return prev;
+    try {
+      const data = await fetchWeather(location);
+      saveToCache(data);
+      setState({
+        data,
+        loading: false,
+        error: null,
+        isStale: false,
+        lastUpdated: data.fetchedAt,
       });
-    }, 60000);
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Failed to fetch weather';
 
-    return () => {
-      if (staleCheckRef.current) clearInterval(staleCheckRef.current);
-    };
-  }, []);
-
-  // Refresh on visibility change (tab/app becomes visible)
-  useEffect(() => {
-    const handleVisibility = () => {
-      if (document.visibilityState === "visible" && state.data) {
-        const age = Date.now() - state.data.fetchedAt;
-        if (age > REFRESH_INTERVAL_MS) {
-          refresh();
-        }
+      // Try to load from cache as fallback
+      const cached = loadFromCache();
+      if (cached) {
+        setState({
+          data: cached,
+          loading: false,
+          error: errorMsg,
+          isStale: true,
+          lastUpdated: cached.fetchedAt,
+        });
+      } else {
+        setState(prev => ({
+          ...prev,
+          loading: false,
+          error: errorMsg,
+        }));
       }
-    };
+    }
+  }, [location, saveToCache, loadFromCache]);
 
-    document.addEventListener("visibilitychange", handleVisibility);
-    return () =>
-      document.removeEventListener("visibilitychange", handleVisibility);
-  }, [refresh, state.data]);
+  // Load on location change
+  useEffect(() => {
+    if (!location) return;
 
-  return { ...state, refresh };
+    // Try cache first for instant display
+    const cached = loadFromCache();
+    if (cached) {
+      const isStale = checkStale(cached.fetchedAt);
+      setState({
+        data: cached,
+        loading: !isStale ? false : true,
+        error: null,
+        isStale,
+        lastUpdated: cached.fetchedAt,
+      });
+      if (isStale) {
+        // Refresh in background
+        fetch();
+      }
+    } else {
+      fetch();
+    }
+  }, [location?.latitude, location?.longitude]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { ...state, refresh: fetch };
 }

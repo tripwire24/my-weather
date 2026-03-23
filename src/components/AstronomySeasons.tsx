@@ -1,153 +1,133 @@
-"use client";
+'use client';
 
-import type { WeatherData } from "@/types/weather";
-import { CollapsibleCard } from "./CollapsibleCard";
-import {
-  getCurrentSeason,
-  getSeasonalDates,
-  getDayLength,
-} from "@/lib/astronomy";
+import { CollapsibleCard } from '@/components/CollapsibleCard';
+import { formatDate, formatCountdown, formatDuration } from '@/lib/formatters';
+import type { AstronomyInfo } from '@/types/weather';
 
 interface AstronomySeasonsProps {
-  data: WeatherData;
+  astronomy: AstronomyInfo;
+  dayLength: number; // minutes
 }
 
-export function AstronomySeasons({ data }: AstronomySeasonsProps) {
-  const { daily } = data;
-  const now = new Date();
-  const year = now.getFullYear();
-  const season = getCurrentSeason(now);
-  const dates = getSeasonalDates(year);
+const SEASON_COLORS: Record<string, string> = {
+  Spring: '#00ff88',
+  Summer: '#ffb800',
+  Autumn: '#ff6600',
+  Winter: '#4d7cff',
+};
 
-  // Day length trend
-  const dayLengthToday = getDayLength(daily.sunrise[0], daily.sunset[0]);
-  const dayLengthTomorrow =
-    daily.sunrise.length > 1
-      ? getDayLength(daily.sunrise[1], daily.sunset[1])
-      : dayLengthToday;
-  const diff = dayLengthTomorrow - dayLengthToday;
-  const daysGettingLonger = diff > 0;
+const SEASON_ICONS: Record<string, string> = {
+  Spring: '🌱',
+  Summer: '☀️',
+  Autumn: '🍂',
+  Winter: '❄️',
+};
 
-  const nextEvents = [
-    { label: "March Equinox", date: dates.marchEquinox },
-    { label: "June Solstice", date: dates.juneSolstice },
-    { label: "September Equinox", date: dates.septemberEquinox },
-    { label: "December Solstice", date: dates.decemberSolstice },
-  ]
-    .filter((e) => e.date > now)
-    .sort((a, b) => a.date.getTime() - b.date.getTime());
+export function AstronomySeasons({ astronomy, dayLength }: AstronomySeasonsProps) {
+  const { currentSeason, daysRemainingInSeason, nextSolstice, nextEquinox, dayLengthTrend, dayLengthChangeTodayMinutes } = astronomy;
+  const seasonColor = SEASON_COLORS[currentSeason] ?? 'var(--sg-cyan)';
+
+  const summary = `${currentSeason} · ${daysRemainingInSeason}d remaining · Day ${dayLengthTrend}`;
+
+  const icon = (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="6" stroke="currentColor" strokeWidth={1.3} />
+      <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth={1} strokeLinecap="round" opacity={0.5} />
+      <circle cx="8" cy="8" r="2" fill="currentColor" opacity={0.4} />
+    </svg>
+  );
 
   return (
     <CollapsibleCard
       title="Astronomy & Seasons"
-      icon={
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="9" cy="9" r="7" stroke="currentColor" strokeWidth="1.2" />
-          <ellipse cx="9" cy="9" rx="7" ry="3" stroke="currentColor" strokeWidth="1" opacity="0.4" />
-          <circle cx="9" cy="9" r="2" fill="currentColor" opacity="0.5" />
-        </svg>
-      }
-      summary={
-        <span>
-          {season.name} · {season.daysRemaining} days remaining
-        </span>
-      }
-      glowColor="magenta"
+      summary={summary}
+      accentColor="magenta"
+      icon={icon}
     >
-      <div className="space-y-4">
-        {/* Current season */}
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm text-sg-text-primary">{season.name}</p>
-            <p className="text-xs text-sg-text-muted">
-              {season.daysRemaining} days until {season.nextSeason}
-            </p>
+      {/* Current season */}
+      <div className="flex items-center gap-4 mb-4 p-3 rounded-xl"
+        style={{
+          background: `${seasonColor}10`,
+          border: `1px solid ${seasonColor}30`,
+        }}
+      >
+        <div className="text-3xl">{SEASON_ICONS[currentSeason]}</div>
+        <div className="flex-1">
+          <div className="sg-mono text-base font-bold mb-0.5" style={{ color: seasonColor }}>
+            {currentSeason}
           </div>
+          <div className="sg-label">{daysRemainingInSeason} days remaining</div>
           {/* Season progress bar */}
-          <div className="w-24">
-            <SeasonProgressBar
-              daysRemaining={season.daysRemaining}
-              totalDays={90} // approximate
+          <div className="mt-1.5 h-1 rounded-full" style={{ background: 'rgba(255,255,255,0.08)' }}>
+            {/* Approx 92 days per season */}
+            <div
+              className="h-full rounded-full"
+              style={{
+                width: `${Math.max(5, Math.min(95, ((92 - daysRemainingInSeason) / 92) * 100))}%`,
+                background: seasonColor,
+                boxShadow: `0 0 6px ${seasonColor}`,
+              }}
             />
           </div>
         </div>
+      </div>
 
-        {/* Day length trend */}
+      {/* Day length */}
+      <div className="flex items-center justify-between mb-4 px-3 py-2 rounded-lg"
+        style={{ background: 'rgba(255,0,255,0.05)', border: '1px solid rgba(255,0,255,0.15)' }}
+      >
         <div>
-          <p className="text-xs text-sg-text-muted mb-1">Day Length Trend</p>
-          <p className="text-sm text-sg-text-primary">
-            Days getting{" "}
-            <span
-              style={{
-                color: daysGettingLonger ? "#ffb800" : "#4d7cff",
-              }}
-            >
-              {daysGettingLonger ? "longer" : "shorter"}
-            </span>
-          </p>
-          {diff !== 0 && (
-            <p className="sg-data text-xs text-sg-text-muted">
-              {Math.abs(diff)} min {daysGettingLonger ? "more" : "less"} tomorrow
-            </p>
-          )}
+          <span className="sg-label block">DAY LENGTH</span>
+          <span className="sg-mono text-sm text-[var(--sg-text-primary)]">{formatDuration(dayLength)}</span>
         </div>
+        <div className="text-right">
+          <span className="sg-label block">TREND</span>
+          <span className="sg-mono text-sm" style={{ color: dayLengthTrend === 'increasing' ? 'var(--sg-green)' : 'var(--sg-red)' }}>
+            {dayLengthTrend === 'increasing' ? '+' : '−'}{dayLengthChangeTodayMinutes.toFixed(1)}min/day
+          </span>
+        </div>
+      </div>
 
-        {/* Upcoming events */}
-        <div>
-          <p className="text-xs text-sg-text-muted mb-2">Upcoming Events</p>
-          <div className="space-y-2">
-            {nextEvents.slice(0, 3).map((event) => {
-              const daysUntil = Math.ceil(
-                (event.date.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-              );
-              return (
-                <div
-                  key={event.label}
-                  className="flex items-center justify-between"
-                >
-                  <span className="text-xs text-sg-text-secondary">
-                    {event.label}
-                  </span>
-                  <div className="text-right">
-                    <span className="sg-data text-xs text-sg-text-primary">
-                      {event.date.toLocaleDateString("en-NZ", {
-                        day: "2-digit",
-                        month: "short",
-                      })}
-                    </span>
-                    <span className="text-xs text-sg-text-muted ml-2">
-                      {daysUntil}d
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
+      {/* Upcoming events */}
+      <span className="sg-label block mb-2">UPCOMING EVENTS</span>
+      <div className="space-y-2">
+        <EventCard
+          label={nextSolstice.type === 'summer' ? 'Summer Solstice' : 'Winter Solstice'}
+          date={nextSolstice.date}
+          type="solstice"
+          color={nextSolstice.type === 'summer' ? '#ffb800' : '#4d7cff'}
+        />
+        <EventCard
+          label={nextEquinox.type === 'spring' ? 'Spring Equinox' : 'Autumn Equinox'}
+          date={nextEquinox.date}
+          type="equinox"
+          color={nextEquinox.type === 'spring' ? '#00ff88' : '#ff6600'}
+        />
       </div>
     </CollapsibleCard>
   );
 }
 
-function SeasonProgressBar({
-  daysRemaining,
-  totalDays,
-}: {
-  daysRemaining: number;
-  totalDays: number;
+function EventCard({ label, date, type, color }: {
+  label: string;
+  date: string;
+  type: 'solstice' | 'equinox';
+  color: string;
 }) {
-  const progress = Math.max(0, Math.min(1, 1 - daysRemaining / totalDays));
-
   return (
-    <div className="h-1.5 rounded-full bg-white/5 overflow-hidden">
-      <div
-        className="h-full rounded-full"
-        style={{
-          width: `${progress * 100}%`,
-          background: "linear-gradient(90deg, #ff00ff, #00fff2)",
-          filter: "drop-shadow(0 0 2px rgba(255,0,255,0.4))",
-        }}
-      />
+    <div className="flex items-center justify-between p-2.5 rounded-lg"
+      style={{ background: `${color}08`, border: `1px solid ${color}25` }}
+    >
+      <div className="flex items-center gap-2">
+        <div className="text-lg">{type === 'solstice' ? '🌞' : '⚖️'}</div>
+        <div>
+          <div className="sg-mono text-xs font-semibold" style={{ color }}>{label}</div>
+          <div className="sg-label">{formatDate(date)}</div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="sg-mono text-xs" style={{ color }}>{formatCountdown(date)}</div>
+      </div>
     </div>
   );
 }

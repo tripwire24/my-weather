@@ -1,20 +1,52 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="64" fill="#0a0a0f"/>
-  <g transform="translate(256,256)">
-    <!-- Hexagonal grid lines -->
-    <path d="M-110,-190 L110,-190 L190,0 L110,190 L-110,190 L-190,0 Z" fill="none" stroke="#00fff2" stroke-width="2" opacity="0.3"/>
-    <path d="M-70,-120 L70,-120 L120,0 L70,120 L-70,120 L-120,0 Z" fill="none" stroke="#00fff2" stroke-width="1.5" opacity="0.2"/>
-    <!-- Lightning bolt -->
-    <path d="M-20,-110 L32,-110 L10,-20 L55,-20 L-32,120 L-10,20 L-55,20 Z" fill="#00fff2" opacity="0.9"/>
-    <path d="M-20,-110 L32,-110 L10,-20 L55,-20 L-32,120 L-10,20 L-55,20 Z" fill="none" stroke="#00fff2" stroke-width="3" opacity="0.5">
-      <animate attributeName="opacity" values="0.5;0.2;0.5" dur="2s" repeatCount="indefinite"/>
-    </path>
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="192" viewBox="0 0 192 192">
+  <!-- Background -->
+  <rect width="192" height="192" fill="#0a0a0f" rx="32"/>
+
+  <!-- Grid lines -->
+  <g stroke="rgba(0,255,242,0.06)" stroke-width="1">
+    <line x1="0" y1="48" x2="192" y2="48"/>
+    <line x1="0" y1="96" x2="192" y2="96"/>
+    <line x1="0" y1="144" x2="192" y2="144"/>
+    <line x1="48" y1="0" x2="48" y2="192"/>
+    <line x1="96" y1="0" x2="96" y2="192"/>
+    <line x1="144" y1="0" x2="144" y2="192"/>
   </g>
-  <!-- Corner accents -->
-  <line x1="40" y1="40" x2="100" y2="40" stroke="#4d7cff" stroke-width="3" opacity="0.6"/>
-  <line x1="40" y1="40" x2="40" y2="100" stroke="#4d7cff" stroke-width="3" opacity="0.6"/>
-  <line x1="412" y1="472" x2="472" y2="472" stroke="#4d7cff" stroke-width="3" opacity="0.6"/>
-  <line x1="472" y1="412" x2="472" y2="472" stroke="#4d7cff" stroke-width="3" opacity="0.6"/>
-  <!-- Title -->
-  <text x="256" y="470" text-anchor="middle" fill="#00fff2" font-family="monospace" font-size="28" opacity="0.6">STORMGRID</text>
+
+  <!-- Outer diamond -->
+  <polygon points="96,20 172,96 96,172 20,96"
+    fill="none" stroke="#00fff2" stroke-width="3"
+    filter="url(#glow-cyan)"
+  />
+
+  <!-- Inner diamond -->
+  <polygon points="96,45 147,96 96,147 45,96"
+    fill="rgba(0,255,242,0.05)" stroke="#ff00ff" stroke-width="2"
+    filter="url(#glow-magenta)"
+  />
+
+  <!-- Center hexagon -->
+  <polygon points="96,72 114,84 114,108 96,120 78,108 78,84"
+    fill="rgba(0,255,242,0.1)" stroke="#00fff2" stroke-width="2"
+  />
+
+  <!-- Center dot -->
+  <circle cx="96" cy="96" r="8" fill="#00fff2" opacity="0.9"/>
+  <circle cx="96" cy="96" r="4" fill="#ffffff" opacity="0.8"/>
+
+  <!-- S letter -->
+  <text x="96" y="102" text-anchor="middle" font-family="'JetBrains Mono', monospace" font-size="14" font-weight="bold" fill="none" stroke="#0a0a0f" stroke-width="0.5">SG</text>
+
+  <!-- Filters -->
+  <defs>
+    <filter id="glow-cyan" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feColorMatrix type="matrix" values="0 0 0 0 0  0 1 1 0 0  0 1 1 0 0  0 0 0 0.8 0" in="blur" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="glow-magenta" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="2" result="blur"/>
+      <feColorMatrix type="matrix" values="1 0 1 0 0  0 0 1 0 0  1 0 1 0 0  0 0 0 0.6 0" in="blur" result="coloredBlur"/>
+      <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
 </svg>

@@ -1,172 +1,139 @@
-"use client";
+'use client';
 
-import type { WeatherData } from "@/types/weather";
-import { CollapsibleCard } from "./CollapsibleCard";
-import { SunArc } from "@/components/ui/SunArc";
-import { MoonPhaseIcon } from "@/components/ui/MoonPhaseIcon";
-import { formatTime } from "@/lib/formatters";
-import {
-  getMoonPhase,
-  getNextMoonPhaseDate,
-  getMoonTimes,
-  getGoldenBlueHours,
-  getDayLength,
-  formatDayLength,
-  getSolarNoon,
-} from "@/lib/astronomy";
+import { CollapsibleCard } from '@/components/CollapsibleCard';
+import { SunArc } from '@/components/ui/SunArc';
+import { MoonPhaseIcon } from '@/components/ui/MoonPhaseIcon';
+import { formatTime, formatDuration, formatDate, formatCountdown } from '@/lib/formatters';
+import type { SunInfo, MoonPhaseInfo } from '@/types/weather';
 
 interface SunMoonProps {
-  data: WeatherData;
+  sun: SunInfo;
+  moon: MoonPhaseInfo;
 }
 
-export function SunMoon({ data }: SunMoonProps) {
-  const { daily, location } = data;
-  const sunrise = daily.sunrise[0];
-  const sunset = daily.sunset[0];
-  const now = new Date();
+export function SunMoon({ sun, moon }: SunMoonProps) {
+  const summary = `↑ ${formatTime(sun.sunrise)} · ↓ ${formatTime(sun.sunset)} · ${moon.phaseName}`;
 
-  const dayLengthToday = getDayLength(sunrise, sunset);
-  // Compare today vs tomorrow to show whether days are getting longer or shorter
-  const dayLengthTomorrow =
-    daily.sunrise.length > 1
-      ? getDayLength(daily.sunrise[1], daily.sunset[1])
-      : dayLengthToday;
-  const dayLengthDiff = dayLengthTomorrow - dayLengthToday;
-
-  const moonData = getMoonPhase(now);
-  const nextFull = getNextMoonPhaseDate("full", now);
-  const nextNew = getNextMoonPhaseDate("new", now);
-  const moonTimes = getMoonTimes(now, location.coordinates.latitude);
-  const goldenBlue = getGoldenBlueHours(sunrise, sunset);
-  const solarNoon = getSolarNoon(sunrise, sunset);
+  const icon = (
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+      <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth={1.3} />
+      <path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" />
+    </svg>
+  );
 
   return (
     <CollapsibleCard
       title="Sun & Moon"
-      icon={
-        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-          <circle cx="7" cy="9" r="4" stroke="currentColor" strokeWidth="1.5" />
-          <path d="M14 4a6 6 0 0 0 0 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-        </svg>
-      }
-      summary={
-        <span>
-          ☀ {formatTime(sunrise)} – {formatTime(sunset)} · {moonData.name}
-        </span>
-      }
-      glowColor="amber"
+      summary={summary}
+      accentColor="amber"
+      icon={icon}
     >
-      <div className="space-y-5">
-        {/* Sun arc */}
-        <div>
-          <h4 className="text-xs text-sg-text-muted mb-2">Sun Position</h4>
-          <div className="flex justify-center">
-            <SunArc
-              sunrise={sunrise}
-              sunset={sunset}
-              currentTime={now}
-              width={280}
-              height={90}
-            />
-          </div>
+      {/* Sun arc */}
+      <div className="mb-4">
+        <span className="sg-label block mb-2">SUN POSITION</span>
+        <div className="flex justify-center">
+          <SunArc
+            sunrise={sun.sunrise}
+            sunset={sun.sunset}
+            position={sun.currentPosition}
+            goldenHourMorningEnd={sun.goldenHourMorningEnd}
+            goldenHourEveningStart={sun.goldenHourEveningStart}
+            solarNoon={sun.solarNoon}
+            width={300}
+            height={120}
+          />
         </div>
+      </div>
 
-        {/* Day length */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-sg-text-muted">Day Length</p>
-            <p className="sg-data text-sm text-sg-text-primary">
-              {formatDayLength(dayLengthToday)}
-            </p>
-            <p className="text-xs text-sg-text-muted">
-              {dayLengthDiff > 0
-                ? `${dayLengthDiff}m longer tomorrow`
-                : dayLengthDiff < 0
-                ? `${Math.abs(dayLengthDiff)}m shorter tomorrow`
-                : "Same length tomorrow"}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-sg-text-muted">Solar Noon</p>
-            <p className="sg-data text-sm text-sg-text-primary">
-              {formatTime(solarNoon)}
-            </p>
-          </div>
+      {/* Sun times grid */}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <SunTimeCard label="SUNRISE" time={sun.sunrise} color="#ffb800" icon="↑" />
+        <SunTimeCard label="SUNSET" time={sun.sunset} color="#ff6600" icon="↓" />
+        <SunTimeCard label="SOLAR NOON" time={sun.solarNoon} color="#ffff00" icon="◉" />
+        <SunTimeCard label="DAY LENGTH" time={null} value={formatDuration(sun.dayLength)} color="var(--sg-cyan)" icon="⏱" />
+      </div>
+
+      {/* Golden / Blue hour */}
+      <div className="mb-4 p-3 rounded-lg" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.15)' }}>
+        <span className="sg-label block mb-2">GOLDEN & BLUE HOUR</span>
+        <div className="grid grid-cols-2 gap-2">
+          <MiniTime label="Blue hour AM" time={sun.blueHourMorningStart} color="#4d7cff" />
+          <MiniTime label="Golden AM ends" time={sun.goldenHourMorningEnd} color="#ffb800" />
+          <MiniTime label="Golden PM starts" time={sun.goldenHourEveningStart} color="#ff6600" />
+          <MiniTime label="Blue hour PM" time={sun.blueHourEveningEnd} color="#4d7cff" />
         </div>
+      </div>
 
-        {/* Golden & Blue hours */}
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-sg-amber mb-1">Golden Hour</p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              AM: {formatTime(goldenBlue.goldenHourMorning.start)}–
-              {formatTime(goldenBlue.goldenHourMorning.end)}
-            </p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              PM: {formatTime(goldenBlue.goldenHourEvening.start)}–
-              {formatTime(goldenBlue.goldenHourEvening.end)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-sg-blue mb-1">Blue Hour</p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              AM: {formatTime(goldenBlue.blueHourMorning.start)}–
-              {formatTime(goldenBlue.blueHourMorning.end)}
-            </p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              PM: {formatTime(goldenBlue.blueHourEvening.start)}–
-              {formatTime(goldenBlue.blueHourEvening.end)}
-            </p>
-          </div>
-        </div>
+      <div className="sg-hr mb-4" />
 
-        {/* Divider */}
-        <div className="h-px bg-white/5" />
-
-        {/* Moon section */}
-        <div className="flex items-center gap-4">
-          <MoonPhaseIcon phase={moonData.phase} size={56} />
-          <div>
-            <p className="text-sm text-sg-text-primary">{moonData.name}</p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              {moonData.illumination}% illuminated
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <p className="text-xs text-sg-text-muted">Moonrise</p>
-            <p className="sg-data text-sm text-sg-text-primary">
-              {formatTime(moonTimes.moonrise)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-sg-text-muted">Moonset</p>
-            <p className="sg-data text-sm text-sg-text-primary">
-              {formatTime(moonTimes.moonset)}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-sg-text-muted">Next Full Moon</p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              {nextFull.toLocaleDateString("en-NZ", {
-                day: "2-digit",
-                month: "short",
-              })}
-            </p>
-          </div>
-          <div>
-            <p className="text-xs text-sg-text-muted">Next New Moon</p>
-            <p className="sg-data text-xs text-sg-text-secondary">
-              {nextNew.toLocaleDateString("en-NZ", {
-                day: "2-digit",
-                month: "short",
-              })}
-            </p>
+      {/* Moon */}
+      <div className="flex items-center gap-4 mb-4">
+        <MoonPhaseIcon phase={moon.phase} size={72} color="#00fff2" />
+        <div className="flex-1">
+          <div className="text-sm font-semibold text-[var(--sg-text-primary)] mb-1">{moon.phaseName}</div>
+          <div className="sg-label mb-1">ILLUMINATION</div>
+          <div className="flex items-center gap-2 mb-2">
+            <div className="flex-1 h-1 rounded-full" style={{ background: 'rgba(0,255,242,0.1)' }}>
+              <div
+                className="h-full rounded-full"
+                style={{
+                  width: `${moon.illumination}%`,
+                  background: 'var(--sg-cyan)',
+                  boxShadow: '0 0 6px var(--sg-cyan)',
+                }}
+              />
+            </div>
+            <span className="sg-mono text-xs text-[var(--sg-cyan)]">{moon.illumination}%</span>
           </div>
         </div>
       </div>
+
+      {/* Next full / new moon */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="p-2 rounded-lg text-center" style={{ background: 'rgba(0,255,242,0.05)', border: '1px solid rgba(0,255,242,0.12)' }}>
+          <span className="sg-label block">NEXT FULL MOON</span>
+          <span className="sg-mono text-xs text-[var(--sg-text-primary)] block mt-0.5">
+            {formatDate(moon.nextFullMoon)}
+          </span>
+          <span className="sg-label">{formatCountdown(moon.nextFullMoon)}</span>
+        </div>
+        <div className="p-2 rounded-lg text-center" style={{ background: 'rgba(0,255,242,0.05)', border: '1px solid rgba(0,255,242,0.12)' }}>
+          <span className="sg-label block">NEXT NEW MOON</span>
+          <span className="sg-mono text-xs text-[var(--sg-text-primary)] block mt-0.5">
+            {formatDate(moon.nextNewMoon)}
+          </span>
+          <span className="sg-label">{formatCountdown(moon.nextNewMoon)}</span>
+        </div>
+      </div>
     </CollapsibleCard>
+  );
+}
+
+function SunTimeCard({ label, time, value, color, icon }: {
+  label: string;
+  time: string | null;
+  value?: string;
+  color: string;
+  icon: string;
+}) {
+  return (
+    <div className="flex items-center gap-2 p-2 rounded-lg" style={{ background: 'rgba(255,184,0,0.05)', border: '1px solid rgba(255,184,0,0.1)' }}>
+      <span style={{ color, fontSize: '1rem' }}>{icon}</span>
+      <div>
+        <span className="sg-label block">{label}</span>
+        <span className="sg-mono text-sm" style={{ color }}>
+          {value ?? (time ? formatTime(time) : '—')}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function MiniTime({ label, time, color }: { label: string; time: string; color: string }) {
+  return (
+    <div>
+      <span className="sg-label block">{label}</span>
+      <span className="sg-mono text-xs" style={{ color }}>{formatTime(time)}</span>
+    </div>
   );
 }
