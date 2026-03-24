@@ -112,7 +112,10 @@ export default function StormGridApp() {
         onTouchEnd={handleTouchEnd}
       >
         {/* App header */}
-        <div className="flex items-center justify-between px-4 pt-3 pb-1">
+        <div
+          className="flex items-center justify-between px-4 pb-1"
+          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))' }}
+        >
           <div className="flex items-center gap-2">
             <StormGridLogo />
             <span className="sg-mono text-xs font-bold" style={{ color: 'var(--sg-cyan)', letterSpacing: '0.2em' }}>
