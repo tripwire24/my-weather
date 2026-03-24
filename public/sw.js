@@ -3,8 +3,8 @@
  * Handles offline caching of weather data and app shell
  */
 
-const CACHE_NAME = 'stormgrid-v1';
-const WEATHER_CACHE_NAME = 'stormgrid-weather-v1';
+const CACHE_NAME = 'stormgrid-v2';
+const WEATHER_CACHE_NAME = 'stormgrid-weather-v2';
 
 // App shell — static assets to cache on install
 const STATIC_ASSETS = [
