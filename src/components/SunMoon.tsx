@@ -30,7 +30,6 @@ export function SunMoon({ sun, moon }: SunMoonProps) {
     >
       {/* Sun arc */}
       <div className="mb-4">
-        <span className="sg-label block mb-2">SUN POSITION</span>
         <div className="flex justify-center">
           <SunArc
             sunrise={sun.sunrise}

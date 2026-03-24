@@ -125,29 +125,12 @@ export function SunArc({
         </clipPath>
       </defs>
 
-      {/* ── Sky background dome ── */}
-      <ellipse
-        cx={cx} cy={horizonY}
-        rx={R * 1.05} ry={skyH * 1.02}
-        fill={`url(#${uid}-sky)`}
-        clipPath={`url(#${uid}-clip)`}
-      />
-
-      {/* ── Horizon atmospheric haze ── */}
-      <rect
-        x={arcStart.x - 10} y={horizonY - 10}
-        width={arcEnd.x - arcStart.x + 20} height={14}
-        fill={`url(#${uid}-horizon)`}
-        clipPath={`url(#${uid}-clip)`}
-      />
-
-      {/* ── Horizon line ── */}
+      {/* ── Horizon line (subtle) ── */}
       <line
-        x1={arcStart.x - 6} y1={horizonY}
-        x2={arcEnd.x + 6}   y2={horizonY}
-        stroke="rgba(92, 224, 214,0.2)"
-        strokeWidth={1}
-        strokeDasharray="5 4"
+        x1={arcStart.x} y1={horizonY}
+        x2={arcEnd.x}   y2={horizonY}
+        stroke="rgba(255,255,255,0.06)"
+        strokeWidth={0.5}
       />
 
       {/* ── Track arc (full day path) ── */}
