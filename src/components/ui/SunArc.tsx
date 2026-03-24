@@ -85,8 +85,8 @@ export function SunArc({
   return (
     <svg
       width={width}
-      height={height}
-      viewBox={`0 0 ${width} ${height}`}
+      height={height + 25}
+      viewBox={`0 -25 ${width} ${height + 25}`}
       overflow="visible"
       style={{ display: 'block' }}
       aria-label={`Sun position: ${Math.round(position * 100)}% through the day`}
@@ -119,10 +119,6 @@ export function SunArc({
           <stop offset="100%" stopColor="#ffaa44" stopOpacity={0} />
         </linearGradient>
 
-        {/* Clip to SVG viewport */}
-        <clipPath id={`${uid}-clip`}>
-          <rect x="0" y="0" width={width} height={height} />
-        </clipPath>
       </defs>
 
       {/* ── Horizon line (subtle) ── */}
@@ -140,7 +136,7 @@ export function SunArc({
         stroke="rgba(92, 224, 214,0.12)"
         strokeWidth={2}
         strokeDasharray="5 4"
-        clipPath={`url(#${uid}-clip)`}
+        
       />
 
       {/* ── Golden hour morning zone ── */}
@@ -151,7 +147,7 @@ export function SunArc({
           stroke="rgba(255,140,30,0.55)"
           strokeWidth={4}
           strokeLinecap="round"
-          clipPath={`url(#${uid}-clip)`}
+          
         />
       )}
 
@@ -163,7 +159,7 @@ export function SunArc({
           stroke="rgba(255,100,20,0.55)"
           strokeWidth={4}
           strokeLinecap="round"
-          clipPath={`url(#${uid}-clip)`}
+          
         />
       )}
 
@@ -175,14 +171,14 @@ export function SunArc({
           stroke={`url(#${uid}-elapsed)`}
           strokeWidth={2.5}
           strokeLinecap="round"
-          clipPath={`url(#${uid}-clip)`}
+          
           style={{ filter: 'drop-shadow(0 0 4px rgba(255,200,0,0.7))' }}
         />
       )}
 
       {/* ── Solar noon tick mark ── */}
       {isAboveHorizon && (
-        <g clipPath={`url(#${uid}-clip)`}>
+        <g >
           {/* Noon dot on track */}
           <circle
             cx={noonPos.x} cy={noonPos.y} r={3}
@@ -207,7 +203,7 @@ export function SunArc({
 
       {/* ── Sun indicator (above horizon) ── */}
       {isAboveHorizon && (
-        <g clipPath={`url(#${uid}-clip)`}>
+        <g >
           {/* Outer corona */}
           <circle
             cx={sunPos.x} cy={sunPos.y} r={18}
