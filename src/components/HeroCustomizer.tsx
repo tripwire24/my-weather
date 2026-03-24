@@ -15,7 +15,10 @@ export function HeroCustomizer({ enabled, onToggle, onClose }: HeroCustomizerPro
       style={{ background: 'rgba(5,5,15,0.97)', backdropFilter: 'blur(16px)' }}
     >
       {/* Header */}
-      <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--sg-border)]">
+      <div
+        className="flex items-center gap-3 px-4 py-4 border-b border-[var(--sg-border)]"
+        style={{ paddingTop: 'max(1rem, env(safe-area-inset-top, 0px))' }}
+      >
         <button
           onClick={onClose}
           className="flex items-center justify-center w-8 h-8 rounded-lg flex-shrink-0"
@@ -98,7 +101,10 @@ export function HeroCustomizer({ enabled, onToggle, onClose }: HeroCustomizerPro
       </div>
 
       {/* Footer */}
-      <div className="px-4 py-4 border-t border-[var(--sg-border)]">
+      <div
+        className="px-4 py-4 border-t border-[var(--sg-border)]"
+        style={{ paddingBottom: 'max(1rem, env(safe-area-inset-bottom, 0px))' }}
+      >
         <div className="sg-label text-center">
           {enabled.size} widget{enabled.size !== 1 ? 's' : ''} enabled · Changes save automatically
         </div>
