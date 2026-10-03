@@ -35,7 +35,7 @@ export function OutsideScoreCard({ data }: { data: WeatherData }) {
       </div>
     </div>
     <div className="score-strip" aria-label="Hourly outside score for the next 24 hours">
-      {hours.map((h, i) => { const s = scoreHour(h, mode); return <div key={h.time} title={`${hourName(h.time)}: ${s.score} (${s.label})`}><i className={`tone-${s.tone}`} style={{ height: `${Math.max(8, s.score)}%` }} /><small>{i % 3 === 0 ? hourName(h.time).replace(/(am|pm)/, '') : ''}</small></div>; })}
+      {hours.map((h, i) => { const s = scoreHour(h, mode); return <div key={h.time} title={`${hourName(h.time)}: ${s.score} (${s.label})`}><i className={`tone-${s.tone}`} style={{ height: `${Math.max(8, s.score)}%`, ['--i' as string]: i }} /><small>{i % 3 === 0 ? hourName(h.time).replace(/(am|pm)/, '') : ''}</small></div>; })}
     </div>
     <details className="planner-method"><summary>How the score works</summary><p>Starts at 100 and loses points for rain chance and amount, gusty wind, feels-like temperature outside a comfort range ({mode === 'dog' ? '7 to 21°' : '12 to 25°'}), strong UV{mode === 'kids' ? ' (kids lose more)' : ''} and darkness. A forecast guide, not a safety rule. Pavement can burn paws on hot sunny days.</p></details>
   </section>;
