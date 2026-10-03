@@ -971,3 +971,71 @@ html,body { overflow-x:hidden; max-width:100%; }
 .day-app .now-card { background:none!important; box-shadow:none!important; border:0!important; }
 .day-app .now-card .temperature-row { margin-top:44px; }
 .day-app .hero-sky { display:none!important; }
+
+/* =====================================================================
+   v7 ALIENWARE: matte black chassis, chamfered panels, AlienFX LED zones,
+   hex vent texture, Orbitron numerals.
+   ===================================================================== */
+.day-app {
+  --led:#00f0e8; --led2:#19b8ff; --warn:#ff3b5c; --bio:var(--led); --vio:var(--led2); --pink:var(--warn);
+  --chassis:#0a0d10; --panel:#0e1317;
+  --hex:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'><path d='M14 0l14 8v16l-14 8L0 24V8zM14 32l14 8v9M14 32L0 40v9' fill='none' stroke='white' stroke-opacity='.055'/></svg>");
+  --cut:polygon(18px 0,100% 0,100% calc(100% - 18px),calc(100% - 18px) 100%,0 100%,0 18px);
+  --sg-cyan:var(--led); --sg-cyan-dim:rgba(0,240,232,.5); --sg-cyan-glow:rgba(0,240,232,.12);
+  --sg-border:rgba(0,240,232,.22); --sg-border-bright:rgba(0,240,232,.6);
+  --sg-text-primary:#e9f3f4; --sg-text-secondary:#92a6aa; --sg-text-muted:#5c6c70;
+  background:var(--chassis);
+}
+.ambient::before { background:radial-gradient(80% 28% at 50% 108%,rgba(0,240,232,.32),transparent 70%),radial-gradient(50% 22% at 0% 0%,rgba(25,184,255,.14),transparent 70%),#06080a; }
+.ambient::after { opacity:1; background:var(--hex); background-size:28px 49px; -webkit-mask-image:linear-gradient(180deg,#000,transparent 80%); mask-image:linear-gradient(180deg,#000,transparent 80%); }
+.ambient .blob { opacity:.22; }
+
+/* header */
+.brand-orbit { font-size:0; width:30px; height:34px; display:inline-block; vertical-align:middle; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background:var(--led); position:relative; text-shadow:none; filter:drop-shadow(0 0 6px var(--led)); }
+.brand-orbit::after { content:''; position:absolute; inset:3px; background:#06090b; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); }
+.day-brand { font-family:var(--font-orb),var(--font); letter-spacing:.2em; font-weight:700; font-size:13px; }
+.place-button { font-family:var(--font-orb),var(--font); font-size:clamp(18px,5.6vw,24px)!important; letter-spacing:.08em; }
+.day-app .header-actions button,.day-app .save-button,.day-app .place-chips button,.day-app .chip-row button,.day-app .activity-tabs { border-radius:0; clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); background:#0e1317; border:1px solid rgba(0,240,232,.3); }
+.day-app .activity-tabs { padding:3px; }
+
+/* hero: hexagon core, LED rim */
+.day-app .now-card .eyebrow { font-family:var(--font-jetbrains),monospace; color:var(--led); }
+.day-app .now-card h1 { background:none; -webkit-background-clip:border-box; background-clip:border-box; color:#fff; font-family:var(--font-orb),var(--font); font-weight:700; font-size:clamp(16px,5vw,22px); letter-spacing:.24em; text-shadow:0 0 14px rgba(0,240,232,.5); }
+.day-app .temperature-row { width:min(76%,260px); aspect-ratio:.9; margin:30px auto 24px; isolation:isolate; filter:drop-shadow(0 0 14px rgba(0,240,232,.55)); }
+.day-app .temperature-row::before,.day-app .temperature-row::after { content:''; position:absolute; margin:0; border:0; border-radius:0; right:auto; top:auto; transform:none; box-shadow:none; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); z-index:-1; }
+.day-app .temperature-row::before { inset:0; width:auto; height:auto; background:linear-gradient(180deg,var(--led),var(--led2)); animation:breathe 4s ease-in-out infinite; }
+.day-app .temperature-row::after { inset:3px; width:auto; height:auto; opacity:1; animation:none; background:var(--hex) 0 0/28px 49px,radial-gradient(70% 60% at 50% 110%,rgba(0,240,232,.35),transparent 70%),#06090b; }
+.day-app .big-temperature { background:none; -webkit-background-clip:border-box; background-clip:border-box; color:#fff; font-family:var(--font-orb),var(--font); font-weight:700; font-size:clamp(60px,20vw,88px); letter-spacing:-.02em; text-shadow:0 0 18px rgba(0,240,232,.7); filter:none; }
+.day-app .big-temperature sup { font-weight:400; color:var(--led); }
+.day-app .now-metrics > div { border-radius:0; clip-path:polygon(10px 0,100% 0,100% calc(100% - 10px),calc(100% - 10px) 100%,0 100%,0 10px); background:linear-gradient(180deg,#10161a,#0a0d10); border:1px solid rgba(0,240,232,.28); box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; position:relative; }
+.day-app .now-metrics > div::after { content:''; position:absolute; left:14%; right:14%; bottom:0; height:2px; background:var(--led); box-shadow:0 0 8px var(--led); }
+.day-app .now-metrics span { color:var(--led); font-family:var(--font-jetbrains),monospace; }
+.day-app .now-metrics strong { font-family:var(--font-orb),var(--font); font-size:17px; font-weight:600; }
+
+/* panels: chamfered black slabs, LED zone bar, diagonal cut lines */
+.day-app .planner-card,.day-app .v2-card,.day-app .stat-card,.day-app .welcome-card,.day-app .detail-grid > *,.day-app .loading-card {
+  border:1px solid rgba(0,240,232,.26); border-radius:0; clip-path:var(--cut);
+  background:var(--hex) 0 0/28px 49px,linear-gradient(180deg,#10161a,#090c0f); box-shadow:none; overflow:hidden; }
+.day-app .planner-card::before,.day-app .v2-card::before { inset:auto; left:0; top:24px; bottom:24px; width:3px; border-radius:0; background:linear-gradient(180deg,var(--led),var(--led2)); box-shadow:0 0 10px var(--led),0 0 24px rgba(0,240,232,.6); filter:none; animation:breathe 4.5s ease-in-out infinite; z-index:2; }
+.day-app .planner-card::after,.day-app .v2-card::after { content:''; position:absolute; inset:0; pointer-events:none; z-index:2; background:
+  linear-gradient(to top right,transparent calc(50% - 1px),var(--led) calc(50% - 1px) calc(50% + 1px),transparent calc(50% + 1px)) 0 0/18px 18px no-repeat,
+  linear-gradient(to top right,transparent calc(50% - 1px),var(--led) calc(50% - 1px) calc(50% + 1px),transparent calc(50% + 1px)) 100% 100%/18px 18px no-repeat; }
+.day-app .section-heading h1,.day-app .section-heading h2,.day-app .v2-card h2,.day-app .planner-card h2 { font-family:var(--font-orb),var(--font); font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.day-app .section-heading h1 { display:block; text-align:left; font-size:clamp(17px,5.2vw,23px); color:#fff; background:none; -webkit-background-clip:border-box; background-clip:border-box; padding-left:14px; border-left:4px solid var(--led); box-shadow:-6px 0 14px -6px var(--led); }
+.day-app .section-heading h1::before,.day-app .section-heading h1::after { display:none; }
+.day-app .section-heading h2,.day-app .v2-card h2,.day-app .planner-card h2 { font-size:clamp(13px,3.9vw,16px); }
+.day-app .pill { border-radius:0; clip-path:polygon(6px 0,100% 0,calc(100% - 6px) 100%,0 100%); background:rgba(0,240,232,.14); color:var(--led); border:0; padding:6px 14px; }
+.day-app .primary-button,.day-app .activity-tabs button.active,.day-app .chip-row button.active,.day-app .place-chips button.selected { border-radius:0; clip-path:polygon(8px 0,100% 0,100% calc(100% - 8px),calc(100% - 8px) 100%,0 100%,0 8px); background:linear-gradient(90deg,var(--led),var(--led2)); color:#021214; border:0; box-shadow:none; font-weight:700; text-transform:uppercase; letter-spacing:.08em; }
+.day-app .window-mark { border-radius:0; clip-path:polygon(50% 0,100% 25%,100% 75%,50% 100%,0 75%,0 25%); background:var(--led); color:#021214; box-shadow:none; }
+.day-app .stat-card strong,.day-app .v2-card h3,.day-app .window-result h3 { font-family:var(--font-orb),var(--font); }
+.day-app .stat-card strong { color:var(--led); text-shadow:0 0 14px rgba(0,240,232,.6); }
+.day-app .rain-bar i,.day-app .golden-bar i { background:linear-gradient(180deg,var(--led),var(--led2)); box-shadow:0 0 8px rgba(0,240,232,.5); border-radius:0; }
+.day-app .radar-stage { border-radius:0; border:1px solid rgba(0,240,232,.35); clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); }
+.day-app .quake-list b { border-radius:0; background:rgba(255,59,92,.15); color:#ff8aa0; border:1px solid rgba(255,59,92,.5); }
+
+/* nav: chassis dock with LED underline on the active zone */
+.day-app .day-nav { border-radius:0; clip-path:polygon(14px 0,100% 0,100% calc(100% - 14px),calc(100% - 14px) 100%,0 100%,0 14px); background:linear-gradient(180deg,#12181d,#080b0e); border:1px solid rgba(0,240,232,.35); box-shadow:none; -webkit-backdrop-filter:none; backdrop-filter:none; }
+.day-app .day-nav button { font-family:var(--font-orb),var(--font); font-size:9px; letter-spacing:.1em; }
+.day-app .day-nav button.active { color:#fff; text-shadow:0 0 8px var(--led); }
+.day-app .nav-glow { border:0; border-radius:0; clip-path:polygon(10% 0,100% 0,90% 100%,0 100%); background:linear-gradient(180deg,rgba(0,240,232,.0),rgba(0,240,232,.22)); box-shadow:inset 0 -3px 0 var(--led); }
+@media (prefers-reduced-motion:reduce) { .day-app .temperature-row::before,.day-app .planner-card::before,.day-app .v2-card::before { animation:none!important; } }
