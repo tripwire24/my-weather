@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { JetBrains_Mono, Space_Mono } from 'next/font/google';
+import { JetBrains_Mono, Space_Mono, Chakra_Petch } from 'next/font/google';
 import '@/app/globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -14,6 +14,13 @@ const spaceMono = Space_Mono({
   variable: '--font-space',
   display: 'swap',
   weight: ['400', '700'],
+});
+
+const tech = Chakra_Petch({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  variable: '--font-tech',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -50,7 +57,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${jetbrainsMono.variable} ${spaceMono.variable} ${tech.variable}`}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
