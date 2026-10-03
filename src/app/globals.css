@@ -931,3 +931,43 @@ html,body { overflow-x:hidden; max-width:100%; }
 .day-app .day-nav { border-radius:999px; background:var(--glass),rgba(4,7,16,.82); width:min(420px,calc(100vw - 24px)); box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 0 34px -8px rgba(93,255,196,.4),0 16px 40px -12px #000; }
 .day-app .nav-glow { border-radius:999px; background:linear-gradient(180deg,rgba(93,255,196,.22),rgba(120,110,255,.12)); box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 20px -2px rgba(93,255,196,.6); }
 @media (prefers-reduced-motion:reduce) { .day-app .temperature-row::before,.day-app .temperature-row::after,.day-app .v2-card::before,.day-app .planner-card::before { animation:none!important; } }
+
+/* =====================================================================
+   v6 YEAR 3000, unmistakable: luminous ocean ground, glass sphere hero,
+   iridescent rims, ripple pulses, centred flanked headings.
+   ===================================================================== */
+.ambient::before { background:
+  radial-gradient(70% 38% at 50% -4%,rgba(60,255,200,.62),transparent 72%),
+  radial-gradient(60% 40% at 105% 38%,rgba(130,90,255,.55),transparent 70%),
+  radial-gradient(60% 36% at -5% 62%,rgba(40,150,255,.40),transparent 70%),
+  radial-gradient(70% 40% at 55% 105%,rgba(255,70,220,.38),transparent 70%),
+  linear-gradient(180deg,#041a22 0%,#07102a 45%,#0a0620 100%); }
+.ambient .blob { opacity:.75; }
+
+/* hero: no card, a floating glass sphere on the water */
+.day-app .now-card { background:none; border:0; box-shadow:none; overflow:visible; padding:12px 0 8px; }
+.day-app .now-card h1 { background:linear-gradient(90deg,#a8fff0,#fff 50%,#e0c8ff); -webkit-background-clip:text; background-clip:text; color:transparent; font-size:clamp(22px,7vw,32px); letter-spacing:.2em; }
+.day-app .temperature-row { isolation:isolate; width:min(86%,300px); margin:18px auto 20px; }
+.day-app .temperature-row::before { z-index:-1; inset:0; border:0; border-radius:50%; animation:breathe 6s ease-in-out infinite; opacity:1;
+  background:radial-gradient(circle at 30% 22%,rgba(255,255,255,.55),rgba(255,255,255,0) 22%),radial-gradient(circle at 50% 118%,rgba(93,255,196,.75),rgba(93,255,196,0) 58%),radial-gradient(circle at 80% 70%,rgba(255,92,225,.35),transparent 50%),radial-gradient(circle at 50% 40%,rgba(80,90,230,.35),rgba(6,10,34,.72) 72%);
+  box-shadow:inset 0 0 0 1.5px rgba(200,255,245,.45),inset 0 -18px 40px rgba(93,255,196,.35),inset 0 14px 30px rgba(255,255,255,.12),0 0 60px rgba(93,255,196,.4),0 0 120px rgba(130,90,255,.35); }
+.day-app .temperature-row::after { z-index:-1; inset:0; border:1.5px solid rgba(93,255,196,.6); border-radius:50%; animation:ripple 4.8s ease-out infinite; }
+@keyframes ripple { 0% { transform:scale(1); opacity:.7; } 100% { transform:scale(1.35); opacity:0; } }
+.day-app .big-temperature { filter:drop-shadow(0 4px 18px rgba(0,0,0,.45)); background:linear-gradient(180deg,#fff 5%,#bdfdf0 45%,#c7a8ff 100%); -webkit-background-clip:text; background-clip:text; font-weight:200; }
+.day-app .now-metrics > div { background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.03)); border:1px solid rgba(200,255,245,.3); border-radius:26px; box-shadow:inset 0 1px 0 rgba(255,255,255,.35),0 10px 30px -12px rgba(93,255,196,.5); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px); }
+
+/* cards: tinted glass, iridescent rim */
+.day-app .planner-card,.day-app .v2-card,.day-app .stat-card,.day-app .welcome-card,.day-app .detail-grid > *,.day-app .loading-card {
+  border:1.5px solid transparent; border-radius:44px 44px 44px 44px / 40px 40px 40px 40px;
+  background:linear-gradient(165deg,rgba(40,120,150,.30),rgba(70,40,150,.26) 55%,rgba(8,10,30,.55)) padding-box,linear-gradient(135deg,#5dffc4,#7f9bff 35%,#ff5ce1 65%,#5dffc4) border-box;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.28),inset 0 -40px 70px -40px rgba(93,255,196,.4),0 26px 60px -28px rgba(93,255,196,.35); }
+.day-app .section-heading h1 { display:flex; align-items:center; gap:14px; text-align:center; justify-content:center; font-size:clamp(18px,5.4vw,24px); letter-spacing:.14em; text-transform:uppercase; }
+.day-app .section-heading h1::before,.day-app .section-heading h1::after { content:''; flex:1; height:1px; background:linear-gradient(90deg,transparent,#5dffc4,transparent); box-shadow:0 0 8px #5dffc4; }
+.day-app .day-nav { background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.04)),rgba(5,10,30,.6); border:1px solid rgba(200,255,245,.35); }
+@media (prefers-reduced-motion:reduce) { .day-app .temperature-row::after { animation:none!important; opacity:0; } }
+.day-app .planner-card,.day-app .v2-card,.day-app .stat-card,.day-app .welcome-card,.day-app .detail-grid > *,.day-app .loading-card {
+  background:linear-gradient(165deg,rgba(40,120,150,.28),rgba(70,40,150,.24) 55%,rgba(8,10,30,.2)) padding-box,linear-gradient(#08101f,#08101f) padding-box,linear-gradient(135deg,#5dffc4,#7f9bff 35%,#ff5ce1 65%,#5dffc4) border-box; }
+.day-app .now-card::before,.day-app .now-card::after { display:none!important; }
+.day-app .now-card { background:none!important; box-shadow:none!important; border:0!important; }
+.day-app .now-card .temperature-row { margin-top:44px; }
+.day-app .hero-sky { display:none!important; }
