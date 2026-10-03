@@ -85,6 +85,7 @@ export function Ambient({ code, isDay }: { code?: number; isDay?: boolean }) {
   const stars = Array.from({ length: isDay === false && !rain ? 28 : 0 }, (_, i) => ({ left: (i * 47) % 100, top: (i * 31) % 70, delay: (i % 7) * 0.6, size: 1 + (i % 3) }));
   return <div className={`ambient ${isDay === false ? 'night' : 'day'} ${rain ? 'is-rain' : ''} ${clear ? 'is-clear' : ''}`} aria-hidden="true">
     <i className="blob b1" /><i className="blob b2" /><i className="blob b3" />
+    {Array.from({ length: 14 }, (_, i) => <i key={`m${i}`} className="mote" style={{ left: `${(i * 41 + 7) % 100}%`, animationDelay: `${-((i * 13) % 20)}s`, animationDuration: `${16 + (i % 5) * 4}s`, width: 2 + (i % 3), height: 2 + (i % 3) }} />)}
     {clear && isDay !== false && <i className="sun-flare" />}
     {stars.map((s, i) => <i key={`s${i}`} className="star" style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}
     {drops.map((d, i) => <i key={`d${i}`} className={`${snow ? 'flake' : 'drop'} d${d.depth}`} style={{ left: `${d.left}%`, animationDelay: `${d.delay}s`, animationDuration: `${d.dur}s` }} />)}
@@ -96,4 +97,63 @@ export function MoonSphere({ phase }: { phase: number }) {
   const waxing = phase <= 0.5;
   const x = waxing ? -phase * 2 * 100 : (1 - (phase - 0.5) * 2) * 100;
   return <div className="moon-sphere" role="img" aria-label="Moon phase"><div className="moon-lit" /><div className="moon-dark" style={{ transform: `translateX(${x}%)` }} /></div>;
+}
+
+// Touch FX: liquid ripple + amber sparkle burst where you touch, a light that follows your finger across a panel,
+// and scroll reveals. Event delegation, transform/opacity only, nothing blocks scrolling.
+export function useLivingUI() {
+  useEffect(() => {
+    if (reduced()) return;
+    const layer = document.createElement('div');
+    layer.className = 'fx-layer'; layer.setAttribute('aria-hidden', 'true');
+    document.body.appendChild(layer);
+    const spawn = (x: number, y: number, big: boolean) => {
+      const r = document.createElement('i'); r.className = big ? 'fx-liquid' : 'fx-ripple';
+      r.style.left = `${x}px`; r.style.top = `${y}px`; layer.appendChild(r);
+      setTimeout(() => r.remove(), big ? 900 : 700);
+      const n = big ? 10 : 7;
+      for (let i = 0; i < n; i++) {
+        const sp = document.createElement('i'); sp.className = 'fx-spark';
+        const a = (Math.PI * 2 * i) / n + Math.random() * 0.6, d = (big ? 70 : 44) + Math.random() * 30;
+        sp.style.left = `${x}px`; sp.style.top = `${y}px`;
+        sp.style.setProperty('--dx', `${Math.cos(a) * d}px`); sp.style.setProperty('--dy', `${Math.sin(a) * d}px`);
+        sp.style.animationDelay = `${Math.random() * 60}ms`;
+        layer.appendChild(sp); setTimeout(() => sp.remove(), 800);
+      }
+      while (layer.childElementCount > 40) layer.firstElementChild?.remove();
+    };
+    let lit: HTMLElement | null = null, raf = 0, px = 0, py = 0;
+    const down = (e: PointerEvent) => {
+      const t = e.target as HTMLElement | null; if (!t || !t.closest) return;
+      const nav = t.closest('.day-nav button');
+      if (nav || t.closest('button, .v2-card, .planner-card, .now-metrics > div')) spawn(e.clientX, e.clientY, !!nav);
+      const card = t.closest('.v2-card, .planner-card, .now-metrics > div') as HTMLElement | null;
+      if (card) { lit = card; card.classList.add('lit'); move(e); }
+    };
+    const move = (e: PointerEvent) => {
+      if (!lit) return; px = e.clientX; py = e.clientY;
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = 0; if (!lit) return; const r = lit.getBoundingClientRect(); lit.style.setProperty('--mx', `${px - r.left}px`); lit.style.setProperty('--my', `${py - r.top}px`); });
+    };
+    const up = () => { if (lit) { lit.classList.remove('lit'); lit = null; } };
+    document.addEventListener('pointerdown', down, { passive: true });
+    document.addEventListener('pointermove', move, { passive: true });
+    document.addEventListener('pointerup', up, { passive: true });
+    document.addEventListener('pointercancel', up, { passive: true });
+
+    // Reveals: panels below the fold start dimmed and slid, then rise into place as they scroll in.
+    const io = new IntersectionObserver((entries) => {
+      for (const en of entries) if (en.isIntersecting) { (en.target as HTMLElement).classList.add('rv-in'); io.unobserve(en.target); }
+    }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+    const scan = () => {
+      document.querySelectorAll<HTMLElement>('.day-main .v2-card, .day-main .planner-card, .day-main .stat-card').forEach((el) => {
+        if (el.dataset.rv) return; el.dataset.rv = '1';
+        if (el.getBoundingClientRect().top > innerHeight * 0.9) { el.classList.add('rv-pre'); io.observe(el); }
+      });
+    };
+    let sraf = 0; const mo = new MutationObserver(() => { if (!sraf) sraf = requestAnimationFrame(() => { sraf = 0; scan(); }); });
+    const main = document.querySelector('.day-app'); if (main) mo.observe(main, { childList: true, subtree: true });
+    scan();
+    return () => { document.removeEventListener('pointerdown', down); document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up); mo.disconnect(); io.disconnect(); layer.remove(); };
+  }, []);
 }
