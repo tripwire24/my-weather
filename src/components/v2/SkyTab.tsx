@@ -3,6 +3,7 @@
 import { useAsync } from '@/hooks/useAsync';
 import { fetchKpForecast, fetchSky, fetchSpaceWeather } from '@/lib/extraApis';
 import { auroraKpNeeded, clock, dateOf, goldenTimes, lightQuality, minsOf, nearestSky, span, stargazing } from '@/lib/insights';
+import { MoonSphere } from '@/components/v2/Motion';
 import type { WeatherData } from '@/types/weather';
 
 export function GoldenHourCard({ data }: { data: WeatherData }) {
@@ -40,7 +41,8 @@ export function StargazingCard({ data }: { data: WeatherData }) {
     {res && <>
       <div className="score-row"><div className={`score-ring tone-${res.best.score >= 75 ? 'great' : res.best.score >= 55 ? 'good' : res.best.score >= 35 ? 'meh' : 'bad'}`} style={{ ['--pct' as string]: `${res.best.score * 3.6}deg` }}><div><strong>{res.best.score}</strong><small>best</small></div></div>
         <div><h3>{res.label}</h3><p>Best around <strong>{clock(minsOf(res.best.time))}</strong> with {Math.round(res.best.cloud)}% cloud. Moon {Math.round(data.moon.illumination)}% lit ({data.moon.phaseName.toLowerCase()}).</p></div></div>
-      <div className="star-strip" aria-label="Cloud cover through the night">{res.hours.map(h => <div key={h.time} title={`${clock(minsOf(h.time))}: ${Math.round(h.cloud)}% cloud`}><i style={{ height: `${Math.max(6, 100 - h.cloud)}%` }} /><small>{Number(h.time.slice(11, 13)) % 2 === 0 ? clock(minsOf(h.time)).replace(/(am|pm)/, '') : ''}</small></div>)}</div>
+      <div className="moon-row"><MoonSphere phase={data.moon.phase} /><div><strong>{data.moon.phaseName}</strong><span>{Math.round(data.moon.illumination)}% lit · costs {Math.round(res.moonPenalty)} points of darkness</span></div></div>
+      <div className="star-strip" aria-label="Cloud cover through the night">{res.hours.map((h, i) => <div key={h.time} title={`${clock(minsOf(h.time))}: ${Math.round(h.cloud)}% cloud`}><i style={{ height: `${Math.max(6, 100 - h.cloud)}%`, ['--i' as string]: i }} /><small>{Number(h.time.slice(11, 13)) % 2 === 0 ? clock(minsOf(h.time)).replace(/(am|pm)/, '') : ''}</small></div>)}</div>
       <small className="run-note">Taller bars mean clearer sky. Score is clear sky minus a moonlight penalty ({Math.round(res.moonPenalty)} points tonight), counted from about 80 minutes after sunset to 80 minutes before sunrise.</small>
     </>}
     {!res && sky && <p className="run-note">Not enough night hours in the forecast yet.</p>}
@@ -66,7 +68,7 @@ export function AuroraCard({ data }: { data: WeatherData }) {
       <div className="run-main"><div className="kp-badge">{peak.toFixed(1)}<small>Kp</small></div><div>
         <h3>{watch ? 'Aurora is possible' : 'Not tonight'}</h3>
         <p>{watch ? `Kp ${peak.toFixed(1)} meets the roughly Kp ${need}+ needed at ${data.location.name}'s latitude. Look south, away from lights.${cloud != null ? ` Tonight's average cloud: ${cloud}%.` : ''}` : `At ${data.location.name}'s latitude you usually need Kp ${need}+. Now ${cur.toFixed(1)}, forecast peak ${(kp.data?.max24h ?? 0).toFixed(1)} over 24 hours.`}</p></div></div>
-      {kp.data && <div className="kp-strip" aria-label="Planetary Kp index forecast">{kp.data.series.map(s => <div key={s.time} title={`${s.kp} Kp`}><i className={s.kp >= need ? 'hot' : ''} style={{ height: `${Math.max(6, (s.kp / 9) * 100)}%` }} /></div>)}</div>}
+      {kp.data && <div className="kp-strip" aria-label="Planetary Kp index forecast">{kp.data.series.map((s, i) => <div key={s.time} title={`${s.kp} Kp`}><i className={s.kp >= need ? 'hot' : ''} style={{ height: `${Math.max(6, (s.kp / 9) * 100)}%`, ['--i' as string]: i }} /></div>)}</div>}
       <small className="run-note">Kp from NOAA SWPC. Your threshold is a rule of thumb, local geomagnetic latitude and a clear southern horizon matter more.</small>
     </>}
   </section>;
