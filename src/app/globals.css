@@ -690,3 +690,115 @@ p.run-note { margin-top:0; }
 .live-extras { margin-bottom:8px; }
 @media(min-width:800px) { .golden-grid { grid-template-columns:repeat(3,1fr); }.live-extras,.sky-grid { display:grid; grid-template-columns:1fr 1fr; gap:0 24px; align-items:start; } }
 @media(max-width:600px) { .v2-card { padding:20px; border-radius:24px; }.stat-grid { grid-template-columns:1fr; }.score-ring { width:84px; height:84px; }.score-ring>div { width:66px; height:66px; } }
+
+/* ===== StormGrid v2.1: motion, depth, light, 3D ===== */
+@property --pct { syntax:'<angle>'; inherits:true; initial-value:0deg; }
+.day-app { position:relative; overflow-x:clip; --ease:cubic-bezier(.22,1,.36,1); }
+.day-header,.day-main { position:relative; z-index:1; }
+.day-nav { z-index:40; }
+
+/* ambient world behind everything */
+.ambient { position:fixed; inset:0; z-index:0; overflow:hidden; pointer-events:none; contain:strict; }
+.ambient .blob { position:absolute; width:70vmax; height:70vmax; border-radius:50%; filter:blur(70px); opacity:.5; will-change:transform; }
+.ambient .b1 { left:-25vmax; top:-30vmax; background:radial-gradient(circle,var(--sg-cyan-glow),transparent 65%); animation:drift1 38s ease-in-out infinite alternate; }
+.ambient .b2 { right:-30vmax; top:20vh; background:radial-gradient(circle,var(--sg-blue-glow),transparent 65%); animation:drift2 46s ease-in-out infinite alternate; }
+.ambient .b3 { left:-10vmax; bottom:-40vmax; background:radial-gradient(circle,var(--sg-magenta-glow),transparent 65%); animation:drift1 52s ease-in-out infinite alternate-reverse; }
+.ambient.is-rain .blob { opacity:.35; }
+.ambient .sun-flare { position:absolute; right:-10vmax; top:-14vmax; width:46vmax; height:46vmax; border-radius:50%; background:radial-gradient(circle,rgba(255,200,90,.32),rgba(255,160,60,.1) 40%,transparent 68%); animation:sunpulse 9s ease-in-out infinite; will-change:transform,opacity; }
+.ambient .star { position:absolute; border-radius:50%; background:#fff; opacity:.1; animation:twinkle 4s ease-in-out infinite; }
+[data-theme="light"] .ambient .star { display:none; }
+.ambient .drop,.ambient .flake { position:absolute; top:-12vh; will-change:transform; animation-name:fall; animation-timing-function:linear; animation-iteration-count:infinite; }
+.ambient .drop { width:1.5px; height:46px; background:linear-gradient(transparent,var(--sg-cyan)); border-radius:2px; }
+.ambient .drop.d0 { opacity:.12; transform:scale(.6); }.ambient .drop.d1 { opacity:.22; }.ambient .drop.d2 { opacity:.38; width:2px; height:64px; filter:blur(.6px); }
+.ambient .flake { width:6px; height:6px; border-radius:50%; background:#fff; opacity:.5; animation-name:snowfall; }.ambient .flake.d0 { transform:scale(.5); opacity:.25; }
+@keyframes drift1 { to { transform:translate3d(14vmax,10vmax,0) scale(1.15); } }
+@keyframes drift2 { to { transform:translate3d(-12vmax,-8vmax,0) scale(1.1); } }
+@keyframes sunpulse { 50% { transform:scale(1.12); opacity:.75; } }
+@keyframes twinkle { 50% { opacity:.85; } }
+@keyframes fall { to { transform:translate3d(-30px,125vh,0); } }
+@keyframes snowfall { 50% { margin-left:18px; } to { transform:translate3d(-20px,125vh,0); } }
+
+/* page + tab entrance: cards rise in with a little 3D tip-back */
+.day-main { perspective:1200px; }
+.day-main > * { animation:rise .7s var(--ease) backwards; }
+.day-main > *:nth-child(1) { animation-delay:.02s; }.day-main > *:nth-child(2) { animation-delay:.07s; }.day-main > *:nth-child(3) { animation-delay:.12s; }.day-main > *:nth-child(4) { animation-delay:.17s; }.day-main > *:nth-child(5) { animation-delay:.22s; }.day-main > *:nth-child(6) { animation-delay:.27s; }.day-main > *:nth-child(n+7) { animation-delay:.3s; }
+@keyframes rise { from { opacity:0; transform:translate3d(0,26px,-60px) rotateX(10deg); } }
+
+/* depth: layered shadows, specular rim, fine grain */
+.planner-card,.v2-card,.stat-card,.now-card,.welcome-card {
+  --grain:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 .55 0'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.5'/></svg>");
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.09),inset 0 -1px 0 rgba(0,0,0,.25),0 1px 2px rgba(0,0,0,.3),0 12px 28px -10px rgba(0,0,0,.5),0 34px 60px -30px rgba(0,0,0,.55);
+}
+.planner-card,.v2-card,.stat-card { background-image:var(--grain),linear-gradient(160deg,rgba(255,255,255,.035),transparent 40%); background-blend-mode:soft-light,normal; }
+.now-card { background-image:var(--grain),linear-gradient(130deg,var(--sg-cyan-glow),var(--sg-bg-secondary) 75%); background-color:var(--sg-bg-secondary); background-blend-mode:soft-light,normal; overflow:hidden; }
+[data-theme="light"] .planner-card,[data-theme="light"] .v2-card,[data-theme="light"] .stat-card,[data-theme="light"] .now-card,[data-theme="light"] .welcome-card {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(30,50,120,.1),0 14px 30px -12px rgba(30,50,120,.22),0 36px 60px -34px rgba(30,50,120,.28);
+}
+.day-nav { backdrop-filter:blur(18px) saturate(1.5); -webkit-backdrop-filter:blur(18px) saturate(1.5); background:color-mix(in srgb,var(--sg-bg-secondary) 92%,transparent); box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 16px 40px -8px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.3); }
+.day-nav button { position:relative; z-index:1; background:transparent!important; transition:color .3s,transform .2s var(--ease); }
+.day-nav button.active span { transform:translateY(-2px) scale(1.15); }.day-nav button span { transition:transform .45s var(--ease); }
+.nav-glow { position:absolute; left:5px; top:5px; bottom:5px; width:calc((100% - 10px)/5); border-radius:18px; background:linear-gradient(180deg,var(--sg-cyan-glow),transparent),var(--sg-bg); border:1px solid var(--sg-border-bright); box-shadow:0 0 22px var(--sg-cyan-glow),inset 0 1px 0 rgba(255,255,255,.12); transition:transform .55s cubic-bezier(.34,1.45,.5,1); will-change:transform; }
+
+/* hero: 3D tilt, parallax clouds, glare, bob, sheen */
+.now-card { transform-style:preserve-3d; transform:perspective(1000px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg)); transition:transform .8s var(--ease); will-change:transform; touch-action:pan-y; }
+.now-card.tilting { transition:transform .08s linear; }
+.hero-sky { position:absolute; inset:0; pointer-events:none; z-index:-1; border-radius:inherit; overflow:hidden; }
+.hero-sky .cloud { position:absolute; border-radius:50%; filter:blur(26px); background:radial-gradient(ellipse,rgba(255,255,255,.2),transparent 70%); will-change:transform; }
+.hero-sky .c1 { width:240px; height:110px; left:-40px; top:10px; opacity:.5; transform:translate3d(calc(var(--tx,0)*-10px),calc(var(--ty,0)*-6px),0); animation:cloudslide 26s ease-in-out infinite alternate; }
+.hero-sky .c2 { width:320px; height:130px; right:-80px; top:60px; opacity:.4; transform:translate3d(calc(var(--tx,0)*18px),calc(var(--ty,0)*8px),0); animation:cloudslide 34s ease-in-out infinite alternate-reverse; }
+.hero-sky .c3 { width:200px; height:90px; left:30%; bottom:-20px; opacity:.45; background:radial-gradient(ellipse,var(--sg-cyan-glow),transparent 70%); transform:translate3d(calc(var(--tx,0)*28px),calc(var(--ty,0)*12px),0); }
+.hero-sky .glare { position:absolute; inset:0; background:radial-gradient(circle at var(--gx,70%) var(--gy,10%),rgba(255,255,255,.2),transparent 42%); mix-blend-mode:soft-light; opacity:.9; }
+.now-card::after { content:''; position:absolute; top:-30%; bottom:-30%; width:38%; left:-60%; background:linear-gradient(100deg,transparent,rgba(255,255,255,.12),transparent); transform:skewX(-18deg); pointer-events:none; animation:sheen 11s ease-in-out 1.4s infinite; }
+.now-card .temperature-row { transform:translateZ(46px); }.now-card .temperature-row svg,.now-card .temperature-row > *:last-child { animation:bob 6s ease-in-out infinite; filter:drop-shadow(0 14px 14px rgba(0,0,0,.35)); }
+.now-card .big-temperature { text-shadow:0 2px 0 rgba(255,255,255,.04),0 14px 30px rgba(0,0,0,.4); font-variant-numeric:tabular-nums; }
+.now-card .now-metrics { transform:translateZ(22px); }
+@keyframes cloudslide { to { translate:60px 8px; } }
+@keyframes sheen { 0%,62% { left:-60%; } 100% { left:140%; } }
+@keyframes bob { 50% { transform:translateY(-7px); } }
+
+/* micro-interactions */
+.day-app button { transition:transform .22s var(--ease),background-color .3s,color .3s,border-color .3s,box-shadow .3s,opacity .3s; -webkit-tap-highlight-color:transparent; }
+.day-app button:active:not(:disabled) { transform:scale(.95); }
+.chip-row button.active,.activity-tabs button.active,.place-chips button.selected { box-shadow:0 0 0 1px var(--sg-border-bright),0 6px 18px -6px var(--sg-cyan-glow); }
+.primary-button { box-shadow:0 10px 28px -8px var(--sg-cyan),inset 0 1px 0 rgba(255,255,255,.35); }
+.switch i { transition:transform .35s cubic-bezier(.34,1.56,.64,1),background .3s,box-shadow .3s; }.switch.on i { transform:scale(1.12); box-shadow:0 0 16px var(--sg-cyan); }
+.score-ring { animation:sweep 1.2s var(--ease) both; filter:drop-shadow(0 6px 14px color-mix(in srgb,var(--tone,var(--sg-cyan)) 35%,transparent)); }
+@keyframes sweep { from { --pct:0deg; } }
+.score-strip i,.rain-bar i,.star-strip i,.kp-strip i { transform-origin:bottom; animation:grow .8s var(--ease) both; animation-delay:calc(var(--i,0)*22ms + .25s); }
+@keyframes grow { from { transform:scaleY(0); opacity:0; } }
+.rain-bar i { box-shadow:0 0 10px var(--sg-cyan-glow); }
+.pack-list span,.run-around>div,.tide-list>div,.golden-grid>div { box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 8px 18px -12px rgba(0,0,0,.6); }
+.run-around>div.on { transform:translateZ(0) translateY(-3px); box-shadow:0 14px 26px -12px var(--sg-cyan-glow),inset 0 1px 0 rgba(255,255,255,.1); }
+.run-around>div { transition:transform .4s var(--ease); }
+.alert-list li { animation:rise .6s var(--ease) backwards; }
+.golden-bar i { box-shadow:0 0 14px rgba(255,170,60,.5); animation:grow 1s var(--ease) both; transform-origin:left; animation-name:growx; }
+@keyframes growx { from { transform:scaleX(0); } }
+.kp-badge { box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 10px 24px -8px var(--sg-magenta-dim); }
+.aurora.watch .kp-badge { animation:glowpulse 3s ease-in-out infinite; }
+@keyframes glowpulse { 50% { box-shadow:0 0 30px var(--sg-magenta),inset 0 1px 0 rgba(255,255,255,.2); } }
+.quake-list b.big { animation:glowpulse 2.4s ease-in-out infinite; box-shadow:0 0 0 0 var(--sg-red); }
+.tide-curve path { stroke-dasharray:700; stroke-dashoffset:700; animation:draw 1.6s var(--ease) .2s forwards; filter:drop-shadow(0 0 6px var(--sg-cyan-glow)); }
+@keyframes draw { to { stroke-dashoffset:0; } }
+.sg-skeleton { animation:shimmer 1.4s ease-in-out infinite; background:linear-gradient(100deg,var(--sg-border) 30%,var(--sg-border-bright) 50%,var(--sg-border) 70%); background-size:200% 100%; }
+@keyframes shimmer { to { background-position:-200% 0; } }
+
+/* 3D radar: pitch the map like a flight view */
+.radar-stage { perspective:900px; perspective-origin:50% 0; border-radius:20px; overflow:hidden; background:var(--sg-bg); height:400px; transition:height .6s var(--ease); }
+.radar-stage .radar-map { transform-origin:50% 100%; transition:transform .9s var(--ease),border-radius .6s; backface-visibility:hidden; }
+.radar-stage.pitched .radar-map { transform:rotateX(46deg) scale(1.28) translateY(2%); box-shadow:0 -30px 50px -10px rgba(0,0,0,.5); }
+.radar-layer { transition:opacity .35s linear; }
+.radar-pin i { animation:pinpulse 2.4s ease-out infinite; }
+@keyframes pinpulse { 0% { box-shadow:0 0 0 0 var(--sg-cyan),0 2px 8px #0008; } 100% { box-shadow:0 0 0 22px transparent,0 2px 8px #0008; } }
+
+/* 3D moon sphere */
+.moon-row { display:flex; align-items:center; gap:16px; padding:14px 0 6px; }
+.moon-row strong { display:block; font-size:15px; font-weight:500; }.moon-row span { display:block; font-size:12px; color:var(--sg-text-secondary); margin-top:3px; line-height:1.4; }
+.moon-sphere { position:relative; width:64px; height:64px; border-radius:50%; overflow:hidden; flex-shrink:0; animation:bob 7s ease-in-out infinite; box-shadow:0 12px 26px -8px rgba(160,180,255,.45),0 0 0 1px rgba(255,255,255,.08); }
+.moon-lit { position:absolute; inset:0; background:radial-gradient(circle at 34% 30%,#fffdf2 0 14%,#e8e4d4 40%,#a9a69a 78%,#6f6d66); }
+.moon-lit::before { content:''; position:absolute; inset:0; background:radial-gradient(circle at 62% 38%,rgba(90,86,76,.45) 0 9%,transparent 11%),radial-gradient(circle at 40% 66%,rgba(90,86,76,.4) 0 12%,transparent 14%),radial-gradient(circle at 70% 70%,rgba(90,86,76,.35) 0 6%,transparent 8%),radial-gradient(circle at 28% 40%,rgba(90,86,76,.3) 0 7%,transparent 9%); }
+.moon-dark { position:absolute; inset:0; border-radius:50%; background:radial-gradient(circle at 60% 50%,#0b0d18,#05060d); box-shadow:0 0 14px 6px #05060d; transition:transform 1.2s var(--ease); }
+
+/* hover lift only where hover exists, so touch never gets stuck states */
+@media (hover:hover) { .v2-card,.stat-card,.planner-card { transition:transform .5s var(--ease),box-shadow .5s; }.v2-card:hover,.stat-card:hover,.planner-card:hover { transform:translateY(-3px); } }
+@media (max-width:600px) { .now-card .temperature-row { transform:translateZ(34px); }.ambient .blob { filter:blur(50px); } }
+@media (prefers-reduced-motion:reduce) { .ambient .drop,.ambient .flake { display:none; }.now-card { transform:none!important; }.day-main > * { animation:none!important; } }
