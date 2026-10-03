@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { JetBrains_Mono, Space_Mono, Chakra_Petch, Orbitron } from 'next/font/google';
+import { JetBrains_Mono, Space_Mono, Chakra_Petch, Jura } from 'next/font/google';
 import '@/app/globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -23,8 +23,9 @@ const tech = Chakra_Petch({
   display: 'swap',
 });
 
-const orb = Orbitron({
+const orb = Jura({
   subsets: ['latin'],
+  weight: ['300', '400', '500', '600', '700'],
   variable: '--font-orb',
   display: 'swap',
 });
