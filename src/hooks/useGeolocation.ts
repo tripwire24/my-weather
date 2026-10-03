@@ -47,7 +47,7 @@ export function useGeolocation(): GeolocationState {
           timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
         };
         setLocation(loc);
-        localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(loc));
+        try { localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(loc)); } catch {}
         setLoading(false);
 
         // Resolve a proper place name in the background (non-blocking)
@@ -55,7 +55,7 @@ export function useGeolocation(): GeolocationState {
           .then((name) => {
             const namedLoc: Location = { ...loc, name };
             setLocation(namedLoc);
-            localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(namedLoc));
+            try { localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(namedLoc)); } catch {}
           })
           .catch(() => {
             // Keep coordinate-based name, no problem
@@ -80,15 +80,6 @@ export function useGeolocation(): GeolocationState {
       { timeout: 10000, maximumAge: 300000, enableHighAccuracy: false }
     );
   };
-
-  // Auto-request on mount if no stored location
-  useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEYS.LOCATION);
-    if (!stored) {
-      requestPermission();
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return { location, loading, error, requestPermission };
 }

@@ -1,14 +1,11 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useTheme } from '@/hooks/useTheme';
 import { useAutoRefresh } from '@/hooks/useAutoRefresh';
-import { useHeroPreferences } from '@/hooks/useHeroPreferences';
-import { useTheme, ThemeMode } from '@/hooks/useTheme';
 import { useExtraData } from '@/hooks/useExtraData';
-import { HeroSection } from '@/components/HeroSection';
-import { HeroCustomizer } from '@/components/HeroCustomizer';
 import { LocationSearch } from '@/components/LocationSearch';
 import { LiveDashboard } from '@/components/LiveDashboard';
 import { HourlyForecast } from '@/components/HourlyForecast';
@@ -18,396 +15,84 @@ import { PrecipitationStorms } from '@/components/PrecipitationStorms';
 import { SunMoon } from '@/components/SunMoon';
 import { UVSolar } from '@/components/UVSolar';
 import { AstronomySeasons } from '@/components/AstronomySeasons';
-import { AirQuality } from '@/components/AirQuality';
 import { FeelsLike } from '@/components/FeelsLike';
-import type { Location } from '@/types/weather';
+import { AirQuality } from '@/components/AirQuality';
+import { WeatherIcon } from '@/components/ui/WeatherIcon';
+import { wmoLabel, formatRelativeTime } from '@/lib/formatters';
+import { STORAGE_KEYS } from '@/lib/constants';
+import type { Location, WeatherData, HourlyForecast as Hour } from '@/types/weather';
 
-type AppTab = 'weather' | 'live';
-
-const PTR_THRESHOLD = 80;
+const PLACES_KEY = 'sg_saved_places';
+const starterPlaces: Location[] = [
+  { name: 'Auckland', latitude: -36.8485, longitude: 174.7633, country: 'New Zealand', timezone: 'Pacific/Auckland' },
+  { name: 'Wellington', latitude: -41.2866, longitude: 174.7756, country: 'New Zealand', timezone: 'Pacific/Auckland' },
+  { name: 'Christchurch', latitude: -43.5321, longitude: 172.6362, country: 'New Zealand', timezone: 'Pacific/Auckland' },
+];
+const samePlace = (a: Location, b: Location) => Math.abs(a.latitude - b.latitude) < .01 && Math.abs(a.longitude - b.longitude) < .01;
+const hourLabel = (time: string) => { const h = Number(time.slice(11, 13)); return `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`; };
 
 export default function StormGridApp() {
-  const { location: geoLocation, loading: geoLoading, requestPermission } = useGeolocation();
-  const [manualLocation, setManualLocation] = useState<Location | null>(null);
-  const [showLocationSearch, setShowLocationSearch] = useState(false);
-  const [showCustomizer, setShowCustomizer] = useState(false);
-  const [activeTab, setActiveTab] = useState<AppTab>('weather');
-  const [ptrDistance, setPtrDistance] = useState(0);
-  const [isRefreshing, setIsRefreshing] = useState(false);
-
-  const activeLocation = manualLocation ?? geoLocation;
-  const { data, loading, error, isStale, lastUpdated, refresh } = useWeatherData(activeLocation);
-  const { enabled: enabledWidgets, toggle: toggleWidget } = useHeroPreferences();
-  const { mode: themeMode, setTheme, adaptivePaletteName } = useTheme(data?.current.weatherCode);
-
-  useAutoRefresh(refresh, !!activeLocation);
-  const { data: extraData, loading: extraLoading, refresh: refreshExtra } = useExtraData(activeLocation);
-
-  const touchStartY = useRef(0);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    touchStartY.current = e.touches[0].clientY;
-  }, []);
-
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    const scrollTop = containerRef.current?.scrollTop ?? 0;
-    if (scrollTop > 0) return;
-    const diff = e.touches[0].clientY - touchStartY.current;
-    if (diff > 0) setPtrDistance(Math.min(PTR_THRESHOLD * 1.5, diff * 0.5));
-  }, []);
-
-  const handleTouchEnd = useCallback(() => {
-    if (ptrDistance >= PTR_THRESHOLD) {
-      setIsRefreshing(true);
-      refresh();
-      setTimeout(() => setIsRefreshing(false), 1500);
-    }
-    setPtrDistance(0);
-  }, [ptrDistance, refresh]);
-
-  const pressureTrend = getPressureTrend(data?.hourly ?? []);
-  const showLoading = loading && !data;
-  const showError = error && !data;
-
-  return (
-    <div className="relative min-h-dvh" style={{ background: 'var(--sg-bg)' }}>
-      <div className="sg-grid-bg" />
-      <div className="sg-scanlines" />
-      <div className="sg-vignette" />
-
-      {/* Pull-to-refresh indicator */}
-      {(ptrDistance > 10 || isRefreshing) && (
-        <div
-          className="fixed top-0 left-1/2 z-40 flex items-center gap-2 px-4 py-2 rounded-b-2xl text-xs sg-mono"
-          style={{
-            background: 'rgba(8,12,30,0.9)',
-            border: '1px solid rgba(92, 224, 214,0.3)',
-            borderTop: 'none',
-            color: 'var(--sg-cyan)',
-            transform: `translateX(-50%) translateY(${isRefreshing ? 0 : Math.min(1, ptrDistance / PTR_THRESHOLD) * 20}px)`,
-            backdropFilter: 'blur(8px)',
-          }}
-        >
-          {isRefreshing ? (
-            <>
-              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" style={{ animation: 'sg-rotate 1s linear infinite' }}>
-                <circle cx="6" cy="6" r="4.5" stroke="currentColor" strokeWidth={1.5} strokeDasharray="14 6" strokeLinecap="round" />
-              </svg>
-              Refreshing...
-            </>
-          ) : (
-            <>↓ {ptrDistance >= PTR_THRESHOLD ? 'Release' : 'Pull'} to refresh</>
-          )}
-        </div>
-      )}
-
-      {/* Main scrollable container */}
-      <div
-        ref={containerRef}
-        className="relative z-10 h-dvh overflow-y-auto"
-        style={{ overscrollBehaviorY: 'contain' }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* App header */}
-        <div
-          className="flex items-center justify-between px-4 pb-1"
-          style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top, 0px))' }}
-        >
-          <div className="flex items-center gap-2">
-            <StormGridLogo />
-            <span className="sg-mono text-xs font-bold" style={{ color: 'var(--sg-cyan)', letterSpacing: '0.2em' }}>
-              STORMGRID
-            </span>
-            {themeMode === 'adaptive' && adaptivePaletteName && (
-              <span
-                className="sg-mono hidden sm:inline"
-                style={{ fontSize: '0.55rem', color: 'var(--sg-text-muted)', letterSpacing: '0.1em' }}
-              >
-                · {adaptivePaletteName.toUpperCase()}
-              </span>
-            )}
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            {/* Theme toggle group */}
-            <ThemeToggle current={themeMode} onChange={setTheme} />
-
-            {/* Refresh button */}
-            <button
-              onClick={refresh}
-              disabled={loading}
-              className="flex items-center justify-center w-9 h-9 rounded-lg transition-all active:opacity-70 active:scale-95"
-              style={{ border: '1px solid rgba(92, 224, 214,0.2)', color: 'var(--sg-cyan)' }}
-              aria-label="Refresh"
-            >
-              <svg width="13" height="13" viewBox="0 0 13 13" fill="none"
-                style={{ animation: loading ? 'sg-rotate 1s linear infinite' : 'none' }}
-              >
-                <path d="M11 2.5A5.5 5.5 0 0 0 1 6.5M2 10.5A5.5 5.5 0 0 0 12 6.5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" />
-                <path d="M11 2.5V5.5H8M2 10.5V7.5H5" stroke="currentColor" strokeWidth={1.4} strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </button>
-          </div>
-        </div>
-
-        {/* States */}
-        {!activeLocation && !geoLoading && (
-          <LocationPrompt onRequest={() => setShowLocationSearch(true)} />
-        )}
-        {geoLoading && !activeLocation && (
-          <div className="px-4 py-3 text-center sg-label">Requesting location...</div>
-        )}
-        {showError && (
-          <div className="mx-4 mb-3 px-3 py-2 rounded-lg text-xs sg-mono"
-            style={{ background: 'rgba(232, 92, 120,0.1)', border: '1px solid rgba(232, 92, 120,0.3)', color: 'var(--sg-red)' }}
-          >
-            ⚠ {error}
-          </div>
-        )}
-
-        {/* Hero — always visible at top on weather tab */}
-        {(data || showLoading) && (
-          <HeroSection
-            data={data}
-            loading={showLoading}
-            isStale={isStale}
-            lastUpdated={lastUpdated}
-            onLocationTap={() => setShowLocationSearch(true)}
-            onCustomize={() => setShowCustomizer(true)}
-            enabledWidgets={enabledWidgets}
-            extraData={extraData}
-          />
-        )}
-
-        {/* Weather tab content */}
-        {activeTab === 'weather' && (
-          <>
-            {data && (
-              <div className="px-3 pb-24 space-y-2 sg-stagger">
-                <HourlyForecast hourly={data.hourly} />
-                <WeeklyForecast daily={data.daily} />
-                <WindAtmosphere current={data.current} pressureTrend={pressureTrend} />
-                <PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0} />
-                <SunMoon sun={data.sun} moon={data.moon} />
-                <UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon} />
-                <AstronomySeasons astronomy={data.astronomy} dayLength={data.sun.dayLength} />
-                {data.airQuality && <AirQuality airQuality={data.airQuality} />}
-                <FeelsLike current={data.current} />
-              </div>
-            )}
-            {showLoading && (
-              <div className="px-3 pb-24 space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="sg-card sg-card-cyan p-4" style={{ height: '56px' }}>
-                    <div className="sg-skeleton h-4 w-32 rounded mb-2" />
-                    <div className="sg-skeleton h-3 w-48 rounded" />
-                  </div>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Live feed tab */}
-        {activeTab === 'live' && activeLocation && (
-          <LiveDashboard
-            data={extraData}
-            loading={extraLoading}
-            onRefresh={refreshExtra}
-            location={activeLocation}
-          />
-        )}
-        {activeTab === 'live' && !activeLocation && (
-          <div className="px-4 py-8 text-center sg-label">Set a location to see live data.</div>
-        )}
-      </div>
-
-      {/* Bottom tab bar */}
-      <nav
-        className="fixed bottom-0 left-0 right-0 z-50 flex"
-        style={{
-          background: 'rgba(8,10,28,0.96)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(92, 224, 214,0.12)',
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-        }}
-      >
-        {([
-          {
-            id: 'weather' as AppTab,
-            label: 'WEATHER',
-            icon: (
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <circle cx="9" cy="9" r="4" stroke="currentColor" strokeWidth={1.4} />
-                <path d="M9 1v2M9 15v2M1 9h2M15 9h2M3.22 3.22l1.42 1.42M13.36 13.36l1.42 1.42M3.22 14.78l1.42-1.42M13.36 4.64l1.42-1.42" stroke="currentColor" strokeWidth={1.2} strokeLinecap="round" />
-              </svg>
-            ),
-          },
-          {
-            id: 'live' as AppTab,
-            label: 'LIVE',
-            icon: (
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-                <path d="M1 9c2-4 4-6 6-6s4 2 4 6-2 6-4 6" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" />
-                <path d="M13 5c2 1 3 2.5 3 4s-1 3-3 4" stroke="currentColor" strokeWidth={1.3} strokeLinecap="round" />
-                <circle cx="7" cy="9" r="1.5" fill="currentColor" />
-                <path d="M1 14h4M15 4l-2 2M15 14l-2-2" stroke="currentColor" strokeWidth={1.1} strokeLinecap="round" opacity={0.5} />
-              </svg>
-            ),
-          },
-        ] as { id: AppTab; label: string; icon: React.ReactNode }[]).map(tab => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className="relative flex-1 flex flex-col items-center justify-center gap-1 py-3 transition-all active:opacity-70"
-            style={{ color: activeTab === tab.id ? 'var(--sg-cyan)' : 'var(--sg-text-muted)' }}
-            aria-label={tab.label}
-          >
-            <div style={{ filter: activeTab === tab.id ? 'drop-shadow(0 0 4px var(--sg-cyan))' : 'none' }}>
-              {tab.icon}
-            </div>
-            <span
-              className="sg-mono"
-              style={{
-                fontSize: '0.58rem',
-                letterSpacing: '0.1em',
-                fontWeight: activeTab === tab.id ? 700 : 400,
-              }}
-            >
-              {tab.label}
-            </span>
-            {activeTab === tab.id && (
-              <div
-                className="absolute bottom-0"
-                style={{
-                  width: '24px',
-                  height: '2px',
-                  background: 'var(--sg-cyan)',
-                  boxShadow: '0 0 8px var(--sg-cyan)',
-                  borderRadius: '2px 2px 0 0',
-                }}
-              />
-            )}
-          </button>
-        ))}
-      </nav>
-
-      {/* Modals */}
-      {showLocationSearch && (
-        <LocationSearch
-          onSelect={setManualLocation}
-          onClose={() => setShowLocationSearch(false)}
-          onRequestGps={requestPermission}
-        />
-      )}
-      {showCustomizer && (
-        <HeroCustomizer
-          enabled={enabledWidgets}
-          onToggle={toggleWidget}
-          onClose={() => setShowCustomizer(false)}
-        />
-      )}
-    </div>
-  );
+  const { location: gps, loading: gpsLoading, error: gpsError, requestPermission } = useGeolocation();
+  const [manual, setManual] = useState<Location | null>(null);
+  const [search, setSearch] = useState(false);
+  const [places, setPlaces] = useState<Location[]>([]);
+  const [tab, setTab] = useState<'today' | 'forecast' | 'live'>('today');
+  const [details, setDetails] = useState(false);
+  const location = manual ?? gps;
+  const { data, loading, error, isStale, lastUpdated, refresh } = useWeatherData(location);
+  const { mode, setTheme } = useTheme(data?.current.weatherCode);
+  useAutoRefresh(refresh, !!location);
+  const extra = useExtraData(tab === 'live' ? location : null);
+  useEffect(() => { queueMicrotask(() => { try { const saved = JSON.parse(localStorage.getItem(PLACES_KEY) || '[]'); if (Array.isArray(saved)) setPlaces(saved.filter(p => typeof p.name === 'string' && Number.isFinite(p.latitude) && Number.isFinite(p.longitude))); } catch {} }); }, []);
+  const select = (place: Location) => {
+    setManual(place);
+    try { localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(place)); } catch {}
+    setSearch(false);
+  };
+  const toggleSave = () => {
+    if (!location) return;
+    const next = places.some(p => samePlace(p, location)) ? places.filter(p => !samePlace(p, location)) : [...places, location].slice(-6);
+    setPlaces(next);
+    try { localStorage.setItem(PLACES_KEY, JSON.stringify(next)); } catch {}
+  };
+  return <div className="day-app">
+    <header className="day-header"><a href="#main" className="day-brand"><span className="brand-orbit">◎</span> StormGrid<span className="brand-note">A little more outside.</span></a>
+      <div className="header-actions"><button aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(mode === 'light' ? 'dark' : 'light')}>{mode === 'light' ? '◐' : '☀'}</button><button aria-label="Refresh forecast" disabled={loading || !location} onClick={refresh}>↻</button></div>
+    </header>
+    <main id="main" className="day-main">
+      <div className="day-toolbar"><button className="place-button" onClick={() => setSearch(true)}>⌖ {location?.name || 'Choose your place'} <span>⌄</span></button>{location && <button className="save-button" onClick={toggleSave} aria-label={places.some(p=>samePlace(p,location)) ? 'Unsave this place' : 'Save this place'}>{places.some(p=>samePlace(p,location)) ? '★ Saved' : '☆ Save'}</button>}</div>
+      {places.length > 0 && <div className="place-chips" aria-label="Saved places">{places.map(p=><button className={location && samePlace(p,location) ? 'selected' : ''} key={`${p.latitude},${p.longitude}`} onClick={()=>select(p)}>{p.name}</button>)}</div>}
+      {!location && <section className="welcome-card"><p className="eyebrow">YOUR DAY, NOT JUST THE NUMBERS</p><h1>Make room<br/>for outside.</h1><p>Know when the rain arrives, find a calmer window, and take the day as it comes.</p><button className="primary-button" onClick={()=>setSearch(true)}>Find your forecast <span>↗</span></button><button className="text-button" onClick={requestPermission} disabled={gpsLoading}>{gpsLoading ? 'Finding your location…' : 'Use my current location'}</button><div className="starter-places">{starterPlaces.map(p=><button key={p.name} onClick={()=>select(p)}>{p.name} ↗</button>)}</div><small>No location permission needed. Places you save stay on this device.</small></section>}
+      {gpsError && <div role="status" className="notice">{gpsError} <button onClick={()=>setSearch(true)}>Search instead</button></div>}
+      {error && <div role="alert" className="notice">{data ? 'Showing a saved forecast. ' : ''}{error} <button onClick={refresh}>Try again</button></div>}
+      {loading && !data && <section className="loading-card" role="status"><div className="sg-skeleton"/><h2>Getting your forecast</h2><p>Rain, wind and the next good window for {location?.name}.</p></section>}
+      {data && <>
+        <div className="forecast-status" role="status">{loading ? 'Updating forecast…' : isStale ? 'Saved forecast · may be out of date' : `Updated ${lastUpdated ? formatRelativeTime(lastUpdated) : 'just now'}`}<span>Open-Meteo · {data.location.timezone || 'local time'}</span></div>
+        {tab === 'today' && <>
+          <section className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature">{Math.round(data.current.temperature)}<sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
+          <DayPlanner data={data}/>
+          <div className="section-heading"><h2>The next 48 hours</h2><button onClick={()=>setTab('forecast')}>See the week ↗</button></div><HourlyForecast hourly={data.hourly}/>
+          <button className="details-button" onClick={()=>setDetails(!details)} aria-expanded={details}>{details ? '− Less detail' : '+ Weather nerd mode'}<span>Wind, UV, sun, moon & air quality</span></button>
+          {details && <div className="detail-grid"><WindAtmosphere current={data.current} pressureTrend={data.hourly.length > 3 ? (data.hourly[3].pressure - data.hourly[0].pressure > 1 ? "rising" : data.hourly[3].pressure - data.hourly[0].pressure < -1 ? "falling" : "steady") : "steady"}/><PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0}/><UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon}/><SunMoon sun={data.sun} moon={data.moon}/><AstronomySeasons astronomy={data.astronomy} dayLength={data.sun.dayLength}/><FeelsLike current={data.current}/>{data.airQuality && <AirQuality airQuality={data.airQuality}/>}</div>}
+        </>}
+        {tab === 'forecast' && <><div className="section-heading"><h1>A week of possibilities.</h1></div><WeeklyForecast daily={data.daily}/><div className="section-heading"><h2>Hour by hour</h2></div><HourlyForecast hourly={data.hourly}/></>}
+        {tab === 'live' && <><div className="section-heading"><h1>Beyond the forecast.</h1></div><LiveDashboard data={extra.data} loading={extra.loading} onRefresh={extra.refresh} location={data.location}/></>}
+        <footer className="day-footer">Model forecasts, not official weather warnings. Conditions can change.<br/><a href="https://www.metservice.com/warnings/home">Check MetService NZ warnings ↗</a></footer>
+      </>}
+    </main>
+    <nav className="day-nav" aria-label="Forecast views">{(['today','forecast','live'] as const).map((t,i)=><button key={t} className={tab === t ? 'active' : ''} aria-current={tab === t ? 'page' : undefined} onClick={()=>setTab(t)}><span>{['◉','▤','◎'][i]}</span>{['Today','Week','Live'][i]}</button>)}</nav>
+    {search && <LocationSearch onSelect={select} onClose={()=>setSearch(false)} onRequestGps={()=>{ setManual(null); requestPermission(); }}/>}
+  </div>;
 }
 
-// Theme toggle — 3-way: dark / light / adaptive
-function ThemeToggle({ current, onChange }: { current: ThemeMode; onChange: (m: ThemeMode) => void }) {
-  const modes: { id: ThemeMode; label: string; icon: React.ReactNode }[] = [
-    {
-      id: 'dark',
-      label: 'DARK',
-      icon: (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <path d="M8.5 6.5A4 4 0 0 1 3.5 1.5a4 4 0 1 0 5 5z" fill="currentColor" />
-        </svg>
-      ),
-    },
-    {
-      id: 'light',
-      label: 'LIGHT',
-      icon: (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <circle cx="5" cy="5" r="2" fill="currentColor" />
-          <path d="M5 1v1M5 8v1M1 5h1M8 5h1M2.5 2.5l.7.7M6.8 6.8l.7.7M2.5 7.5l.7-.7M6.8 3.2l.7-.7" stroke="currentColor" strokeWidth={0.9} strokeLinecap="round" />
-        </svg>
-      ),
-    },
-    {
-      id: 'adaptive',
-      label: 'AUTO',
-      icon: (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
-          <circle cx="5" cy="5" r="3.5" stroke="currentColor" strokeWidth={1} />
-          <path d="M5 1.5v7M1.5 5h7" stroke="currentColor" strokeWidth={0.9} strokeLinecap="round" opacity={0.5} />
-          <path d="M3 2.5C3 4 5 4.5 5 5s-2 1-2 2.5" stroke="currentColor" strokeWidth={0.9} fill="none" strokeLinecap="round" />
-        </svg>
-      ),
-    },
-  ];
-
-  return (
-    <div
-      className="flex items-center rounded-md overflow-hidden"
-      style={{ border: '1px solid rgba(92, 224, 214,0.15)', gap: 0 }}
-    >
-      {modes.map(({ id, label, icon }) => (
-        <button
-          key={id}
-          onClick={() => onChange(id)}
-          className={`sg-theme-btn${current === id ? ' active' : ''}`}
-          style={{ borderRadius: 0, border: 'none', borderRight: id !== 'adaptive' ? '1px solid rgba(92, 224, 214,0.1)' : 'none' }}
-          aria-label={`${label} theme`}
-          title={`${label} mode`}
-        >
-          {icon}
-          <span className="hidden xs:inline">{label}</span>
-        </button>
-      ))}
-    </div>
-  );
-}
-
-function getPressureTrend(hourly: { pressure?: number; time: string }[]): 'rising' | 'falling' | 'steady' {
-  if (hourly.length < 4) return 'steady';
-  const now = new Date();
-  const recent = hourly.filter(h => {
-    const t = new Date(h.time).getTime();
-    return t >= now.getTime() - 3600000 * 3 && t <= now.getTime();
-  });
-  if (recent.length < 2) return 'steady';
-  type H = { pressure?: number; time: string };
-  const pressures = (recent as H[]).map(h => h.pressure ?? 0).filter(p => p > 0);
-  if (pressures.length < 2) return 'steady';
-  const diff = pressures[pressures.length - 1] - pressures[0];
-  if (diff > 1) return 'rising';
-  if (diff < -1) return 'falling';
-  return 'steady';
-}
-
-function LocationPrompt({ onRequest }: { onRequest: () => void }) {
-  return (
-    <div className="mx-4 my-6 p-6 text-center sg-card sg-card-cyan">
-      <div className="text-4xl mb-3">📍</div>
-      <div className="text-sm font-semibold text-[var(--sg-text-primary)] mb-1">Location Required</div>
-      <div className="sg-label mb-4">StormGrid needs your location to show weather data.</div>
-      <button onClick={onRequest} className="sg-btn mx-auto block">SET LOCATION</button>
-    </div>
-  );
-}
-
-function StormGridLogo() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-      <polygon points="10,2 18,10 10,18 2,10" stroke="#5ce0d6" strokeWidth={1.5} fill="none"
-        style={{ filter: 'drop-shadow(0 0 4px #5ce0d6)' }} />
-      <polygon points="10,5 15,10 10,15 5,10" stroke="#c874e8" strokeWidth={1} fill="rgba(92, 224, 214,0.05)"
-        style={{ filter: 'drop-shadow(0 0 3px #c874e8)' }} />
-      <circle cx="10" cy="10" r="2" fill="#5ce0d6" opacity={0.8} />
-    </svg>
-  );
+function DayPlanner({ data }: { data: WeatherData }) {
+  const [activity, setActivity] = useState<'walk'|'washing'|'cycling'>('walk');
+  const hours = data.hourly.slice(0,24);
+  const limits = { walk: { rain: 30, wind: 25, gust: 40, duration: 2 }, washing: { rain: 20, wind: 30, gust: 45, duration: 3 }, cycling: { rain: 20, wind: 20, gust: 35, duration: 2 } }[activity];
+  const ok = (h: Hour) => h.isDay && h.precipitationProbability <= limits.rain && h.precipitation < .2 && h.windSpeed <= limits.wind && h.windGusts <= limits.gust;
+  const start = hours.findIndex((_,i)=>hours.slice(i,i+limits.duration).length === limits.duration && hours.slice(i,i+limits.duration).every(ok));
+  const window = start >= 0 ? hours.slice(start,start+limits.duration) : [];
+  const rain = hours.find(h=>h.precipitationProbability >= 50 || h.precipitation >= .5);
+  const maxChance = hours.length ? Math.max(...hours.map(h=>h.precipitationProbability)) : 0;
+  return <section className="planner-card"><div className="section-heading"><h2>Your outside window</h2><span className="pill">NEXT 24H</span></div><div className="activity-tabs" aria-label="Choose activity">{(['walk','washing','cycling'] as const).map(a=><button key={a} aria-pressed={activity === a} className={activity === a ? 'active' : ''} onClick={()=>setActivity(a)}>{a === 'walk' ? '↗ A walk' : a === 'washing' ? '☀ Washing' : '↝ A ride'}</button>)}</div><div className="window-result"><span className="window-mark">{window.length ? '↗' : '☂'}</span><div><h3>{window.length ? `${hourLabel(window[0].time)}–${hourLabel(window[window.length-1].time.replace(/T(\d{2})/, (_,h)=>`T${String((Number(h)+1)%24).padStart(2,'0')}`))}` : 'No clear window yet'}</h3><p>{window.length ? `${window[0].time.slice(0,10) === hours[0]?.time.slice(0,10) ? 'Today' : 'Tomorrow'} · ${Math.round(Math.min(...window.map(h=>h.temperature)))}–${Math.round(Math.max(...window.map(h=>h.temperature)))}° · up to ${Math.max(...window.map(h=>h.precipitationProbability))}% rain chance` : 'Try another activity or check again later.'}</p></div></div><p className="rain-summary">{rain ? `Rain looks more likely around ${hourLabel(rain.time)}${rain.time.slice(0,10) !== hours[0]?.time.slice(0,10) ? ' tomorrow' : ''}.` : `No strong rain signal in the next 24 hours (${maxChance}% peak chance).`}</p><div className="rain-strip" aria-label="Hourly rain probability over the next 12 hours">{hours.slice(0,12).map(h=><div key={h.time} title={`${hourLabel(h.time)}: ${h.precipitationProbability}% chance`}><span>{h.precipitationProbability}%</span><div className="rain-bar"><i style={{height:`${Math.max(4,h.precipitationProbability)}%`}}/></div><small>{hourLabel(h.time)}</small></div>)}</div><details className="planner-method"><summary>How this window is picked</summary><p>{limits.duration} consecutive daylight hours, rain chance ≤{limits.rain}%, rain &lt;0.2 mm/h, wind ≤{limits.wind} km/h and gusts ≤{limits.gust} km/h. {activity === 'washing' ? 'A dry window, not a drying-time guarantee. ' : ''}UV, road and local conditions still matter. This is a forecast estimate, not safety advice.</p></details></section>;
 }

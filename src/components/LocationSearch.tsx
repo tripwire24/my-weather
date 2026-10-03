@@ -14,6 +14,7 @@ interface LocationSearchProps {
 export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSearchProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<GeocodingResult[]>([]);
+  const [error, setError] = useState('');
   const [searching, setSearching] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
@@ -23,18 +24,23 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
   }, []);
 
   useEffect(() => {
+    let cancelled = false;
     clearTimeout(debounceRef.current);
-    if (!query.trim()) { setResults([]); return; }
-
+    setError('');
+    setResults([]);
+    if (!query.trim()) { setSearching(false); return; }
+    setSearching(true);
     debounceRef.current = setTimeout(async () => {
-      setSearching(true);
       try {
         const res = await searchLocations(query);
-        setResults(res);
+        if (!cancelled) setResults(res);
+      } catch {
+        if (!cancelled) setError('Search is unavailable. Try again or use your current location.');
       } finally {
-        setSearching(false);
+        if (!cancelled) setSearching(false);
       }
     }, 400);
+    return () => { cancelled = true; clearTimeout(debounceRef.current); };
   }, [query]);
 
   const handleSelect = (r: GeocodingResult) => {
@@ -46,7 +52,7 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
       region: r.admin1,
       timezone: r.timezone,
     };
-    localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(loc));
+    try { localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(loc)); } catch {}
     onSelect(loc);
     onClose();
   };
@@ -54,7 +60,9 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
   return (
     <div
       className="fixed inset-0 z-50 flex flex-col"
-      style={{ background: 'rgba(5,5,15,0.96)', backdropFilter: 'blur(16px)' }}
+      role="dialog" aria-modal="true" aria-label="Choose a location"
+      onKeyDown={e => { if (e.key === 'Escape') onClose(); }}
+      style={{ background: 'var(--sg-bg)', paddingTop: 'env(safe-area-inset-top, 0px)' }}
     >
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-4 border-b border-[var(--sg-border)]">
@@ -75,6 +83,7 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
         >
           <SearchIcon />
           <input
+            aria-label="Search city or location"
             ref={inputRef}
             value={query}
             onChange={e => setQuery(e.target.value)}
@@ -99,10 +108,11 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
       </button>
 
       {/* Results */}
-      <div className="flex-1 overflow-y-auto">
-        {results.length === 0 && query && !searching && (
+      <div className="flex-1 overflow-y-auto" aria-live="polite">
+        {error && <p className="p-4 text-sm">{error}</p>}
+        {results.length === 0 && query && !searching && !error && (
           <div className="px-4 py-8 text-center text-[var(--sg-text-muted)] text-sm">
-            No locations found for "{query}"
+            No locations found for &quot;{query}&quot;
           </div>
         )}
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { WeatherData, WeatherState, Location } from '@/types/weather';
 import { fetchWeather } from '@/lib/openmeteo';
 import { STORAGE_KEYS, STALE_THRESHOLD_MS } from '@/lib/constants';
@@ -15,6 +15,8 @@ export function useWeatherData(location: Location | null): WeatherState & {
     isStale: false,
     lastUpdated: null,
   });
+
+  const requestId = useRef(0);
 
   const checkStale = useCallback((fetchedAt: string) => {
     return Date.now() - new Date(fetchedAt).getTime() > STALE_THRESHOLD_MS;
@@ -47,10 +49,12 @@ export function useWeatherData(location: Location | null): WeatherState & {
   const fetch = useCallback(async () => {
     if (!location) return;
 
-    setState(prev => ({ ...prev, loading: true, error: null }));
+    const id = ++requestId.current;
+    setState(prev => ({ ...prev, data: prev.data && Math.abs(prev.data.location.latitude - location.latitude) < .01 && Math.abs(prev.data.location.longitude - location.longitude) < .01 ? prev.data : null, loading: true, error: null }));
 
     try {
       const data = await fetchWeather(location);
+      if (id !== requestId.current) return;
       saveToCache(data);
       setState({
         data,
@@ -60,6 +64,7 @@ export function useWeatherData(location: Location | null): WeatherState & {
         lastUpdated: data.fetchedAt,
       });
     } catch (err) {
+      if (id !== requestId.current) return;
       const errorMsg = err instanceof Error ? err.message : 'Failed to fetch weather';
 
       // Try to load from cache as fallback

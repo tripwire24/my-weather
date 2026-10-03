@@ -11,16 +11,11 @@ interface HourlyForecastProps {
 }
 
 export function HourlyForecast({ hourly }: HourlyForecastProps) {
-  // Show next 24 hours from now
-  const now = new Date();
-  const upcoming = hourly
-    .filter(h => new Date(h.time) >= new Date(now.getTime() - 30 * 60 * 1000))
-    .slice(0, 25);
-
+  // The API parser already starts at the location's current hour.
+  // Do not re-interpret timezone-less local timestamps in the device timezone.
+  const upcoming = hourly.slice(0, 48);
   const temps = upcoming.map(h => h.temperature);
-  const currentIndex = upcoming.findIndex(h =>
-    Math.abs(new Date(h.time).getTime() - now.getTime()) < 1800000
-  );
+  const currentIndex = 0;
 
   const minTemp = Math.min(...temps);
   const maxTemp = Math.max(...temps);
@@ -39,13 +34,14 @@ export function HourlyForecast({ hourly }: HourlyForecastProps) {
     <CollapsibleCard
       title="Hourly Forecast"
       summary={summary}
+      defaultOpen
       accentColor="cyan"
       icon={icon}
     >
       {/* Sparkline */}
       <div className="mb-3">
         <div className="flex justify-between mb-1">
-          <span className="sg-label">TEMPERATURE — NEXT 24H</span>
+          <span className="sg-label">TEMPERATURE · NEXT 48H</span>
           <span className="sg-mono text-xs text-[var(--sg-text-muted)]">
             {formatTemp(minTemp)} – {formatTemp(maxTemp)}
           </span>
