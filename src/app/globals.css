@@ -734,7 +734,7 @@ p.run-note { margin-top:0; }
 [data-theme="light"] .planner-card,[data-theme="light"] .v2-card,[data-theme="light"] .stat-card,[data-theme="light"] .now-card,[data-theme="light"] .welcome-card {
   box-shadow:inset 0 1px 0 rgba(255,255,255,.9),0 1px 2px rgba(30,50,120,.1),0 14px 30px -12px rgba(30,50,120,.22),0 36px 60px -34px rgba(30,50,120,.28);
 }
-.day-nav { backdrop-filter:blur(18px) saturate(1.5); -webkit-backdrop-filter:blur(18px) saturate(1.5); background:color-mix(in srgb,var(--sg-bg-secondary) 92%,transparent); box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 16px 40px -8px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.3); }
+.day-nav { backdrop-filter:blur(18px) saturate(1.5); -webkit-backdrop-filter:blur(18px) saturate(1.5); background:color-mix(in srgb,var(--sg-bg-secondary) 98%,transparent); box-shadow:inset 0 1px 0 rgba(255,255,255,.1),0 16px 40px -8px rgba(0,0,0,.6),0 4px 10px rgba(0,0,0,.3); }
 .day-nav button { position:relative; z-index:1; background:transparent!important; transition:color .3s,transform .2s var(--ease); }
 .day-nav button.active span { transform:translateY(-2px) scale(1.15); }.day-nav button span { transition:transform .45s var(--ease); }
 .nav-glow { position:absolute; left:5px; top:5px; bottom:5px; width:calc((100% - 10px)/5); border-radius:18px; background:linear-gradient(180deg,var(--sg-cyan-glow),transparent),var(--sg-bg); border:1px solid var(--sg-border-bright); box-shadow:0 0 22px var(--sg-cyan-glow),inset 0 1px 0 rgba(255,255,255,.12); transition:transform .55s cubic-bezier(.34,1.45,.5,1); will-change:transform; }
