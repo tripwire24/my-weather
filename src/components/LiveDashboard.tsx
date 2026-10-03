@@ -5,16 +5,18 @@ import { EarthquakeCard } from '@/components/extra/EarthquakeCard';
 import { SpaceWeatherCard } from '@/components/extra/SpaceWeatherCard';
 import { FlightsCard } from '@/components/extra/FlightsCard';
 import type { ExtraData } from '@/types/extra';
-import type { Location } from '@/types/weather';
+import type { Location, WeatherData } from '@/types/weather';
+import { LiveExtras } from '@/components/v2/LiveExtras';
 
 interface LiveDashboardProps {
   data: ExtraData | null;
   loading: boolean;
   onRefresh: () => void;
   location?: Location | null;
+  weather?: WeatherData | null;
 }
 
-export function LiveDashboard({ data, loading, onRefresh, location }: LiveDashboardProps) {
+export function LiveDashboard({ data, loading, onRefresh, location, weather }: LiveDashboardProps) {
   const updatedAt = data?.fetchedAt
     ? new Date(data.fetchedAt).toLocaleTimeString('en-NZ', { hour: 'numeric', minute: '2-digit', hour12: true })
     : null;
@@ -55,6 +57,8 @@ export function LiveDashboard({ data, loading, onRefresh, location }: LiveDashbo
         </button>
       </div>
 
+      {weather && <LiveExtras data={weather} />}
+
       {/* Cards */}
       <div className="space-y-2 sg-stagger">
         <MarineCard
@@ -82,7 +86,7 @@ export function LiveDashboard({ data, loading, onRefresh, location }: LiveDashbo
       {/* Attribution */}
       <div className="mt-6 px-1 space-y-1">
         <div className="sg-label" style={{ fontSize: '0.55rem', lineHeight: '1.6' }}>
-          DATA SOURCES: Open-Meteo Marine API · USGS Earthquake Hazards Program · NOAA Space Weather Prediction Center · OpenSky Network
+          DATA SOURCES: GeoNet NZ · Open-Meteo Marine API · USGS Earthquake Hazards Program · NOAA Space Weather Prediction Center · OpenSky Network
         </div>
         <div className="sg-label" style={{ fontSize: '0.55rem' }}>
           All data is provided free of charge by public scientific agencies. Accuracy may vary.
