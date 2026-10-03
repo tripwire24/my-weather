@@ -112,7 +112,7 @@ export function LocationSearch({ onSelect, onClose, onRequestGps }: LocationSear
         {error && <p className="p-4 text-sm">{error}</p>}
         {results.length === 0 && query && !searching && !error && (
           <div className="px-4 py-8 text-center text-[var(--sg-text-muted)] text-sm">
-            No locations found for "{query}"
+            No locations found for &quot;{query}&quot;
           </div>
         )}
 
