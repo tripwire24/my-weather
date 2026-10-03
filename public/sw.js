@@ -3,8 +3,8 @@
  * Handles offline caching of weather data and app shell
  */
 
-const CACHE_NAME = 'stormgrid-v3';
-const WEATHER_CACHE_NAME = 'stormgrid-weather-v3';
+const CACHE_NAME = 'stormgrid-v4';
+const WEATHER_CACHE_NAME = 'stormgrid-weather-v4';
 
 // App shell — static assets to cache on install
 const STATIC_ASSETS = [
@@ -32,7 +32,7 @@ self.addEventListener('activate', (event) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys
-          .filter((k) => k !== CACHE_NAME && k !== WEATHER_CACHE_NAME)
+          .filter((k) => k !== CACHE_NAME && k !== WEATHER_CACHE_NAME && k !== 'stormgrid-alerts')
           .map((k) => caches.delete(k))
       );
     })
@@ -145,4 +145,39 @@ async function staleWhileRevalidate(request, cacheName) {
   }).catch(() => null);
 
   return cached || networkPromise;
+}
+
+// ── Alerts: notification click + best-effort background rain check ──
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
+    for (const c of list) { if ('focus' in c) return c.focus(); }
+    return self.clients.openWindow('/');
+  }));
+});
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === 'stormgrid-rain-check') event.waitUntil(backgroundRainCheck());
+});
+
+async function backgroundRainCheck() {
+  try {
+    const cache = await caches.open('stormgrid-alerts');
+    const res = await cache.match('/__alert_places');
+    if (!res) return;
+    const places = await res.json();
+    for (const p of places.slice(0, 5)) {
+      const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + p.latitude + '&longitude=' + p.longitude + '&minutely_15=precipitation&forecast_minutely_15=5&current=precipitation&timezone=auto';
+      const d = await (await fetch(url)).json();
+      if ((d.current && d.current.precipitation >= 0.1)) continue;
+      const times = d.minutely_15.time, vals = d.minutely_15.precipitation;
+      const i = times.findIndex((t, k) => t > d.current.time && vals[k] >= 0.15);
+      if (i >= 0) {
+        await self.registration.showNotification('Rain at ' + p.name + ' soon', {
+          body: 'Rain looks likely to start around ' + times[i].slice(11, 16) + '.',
+          tag: 'rain-' + p.name + '-' + times[i], icon: '/icons/icon-192.svg',
+        });
+      }
+    }
+  } catch (e) { /* best effort */ }
 }
