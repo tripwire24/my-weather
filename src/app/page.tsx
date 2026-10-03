@@ -17,6 +17,12 @@ import { UVSolar } from '@/components/UVSolar';
 import { AstronomySeasons } from '@/components/AstronomySeasons';
 import { FeelsLike } from '@/components/FeelsLike';
 import { AirQuality } from '@/components/AirQuality';
+import { Radar } from '@/components/v2/Radar';
+import { SkyView } from '@/components/v2/SkyTab';
+import { HistoryCards } from '@/components/v2/HistoryCards';
+import { AlertsCard, DaycareRun, OutsideScoreCard, notify, type AlertItem } from '@/components/v2/TodayExtras';
+import { fetchRainSoon, fetchKpForecast } from '@/lib/extraApis';
+import { auroraKpNeeded } from '@/lib/insights';
 import { WeatherIcon } from '@/components/ui/WeatherIcon';
 import { wmoLabel, formatRelativeTime } from '@/lib/formatters';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -36,7 +42,7 @@ export default function StormGridApp() {
   const [manual, setManual] = useState<Location | null>(null);
   const [search, setSearch] = useState(false);
   const [places, setPlaces] = useState<Location[]>([]);
-  const [tab, setTab] = useState<'today' | 'forecast' | 'live'>('today');
+  const [tab, setTab] = useState<'today' | 'radar' | 'forecast' | 'sky' | 'live'>('today');
   const [details, setDetails] = useState(false);
   const location = manual ?? gps;
   const { data, loading, error, isStale, lastUpdated, refresh } = useWeatherData(location);
@@ -44,6 +50,41 @@ export default function StormGridApp() {
   useAutoRefresh(refresh, !!location);
   const extra = useExtraData(tab === 'live' ? location : null);
   useEffect(() => { queueMicrotask(() => { try { const saved = JSON.parse(localStorage.getItem(PLACES_KEY) || '[]'); if (Array.isArray(saved)) setPlaces(saved.filter(p => typeof p.name === 'string' && Number.isFinite(p.latitude) && Number.isFinite(p.longitude))); } catch {} }); }, []);
+  const [alerts, setAlerts] = useState<AlertItem[]>([]);
+  const [checkTick, setCheckTick] = useState(0);
+  const lat = location?.latitude, lon = location?.longitude, locName = location?.name;
+  useEffect(() => {
+    if (lat == null || lon == null || !locName) return;
+    let alive = true;
+    const run = async () => {
+      if (document.visibilityState === 'hidden') return;
+      const targets = [{ name: locName, latitude: lat, longitude: lon }, ...places.filter(p => !samePlace(p, { name: locName, latitude: lat, longitude: lon }))].slice(0, 4);
+      const found: AlertItem[] = [];
+      await Promise.all(targets.map(async p => {
+        try {
+          const r = await fetchRainSoon(p.latitude, p.longitude);
+          if (!r.raining && r.startsAt && r.inMinutes != null && r.inMinutes <= 60) {
+            found.push({ id: `rain-${p.name}-${r.startsAt}`, kind: 'rain', title: `Rain at ${p.name} in about ${Math.max(5, Math.round(r.inMinutes / 5) * 5)} min`, body: `Starts around ${hourLabel(r.startsAt)}${r.startsAt.slice(14, 16) !== '00' ? ':' + r.startsAt.slice(14, 16) : ''}. Get the washing in.` });
+          }
+        } catch {}
+      }));
+      try {
+        if (localStorage.getItem('sg_alerts_on') === '1') {
+          const kp = await fetchKpForecast();
+          const need = auroraKpNeeded(lat);
+          if (kp.max24h >= need) found.push({ id: `aurora-${new Date().toISOString().slice(0, 10)}`, kind: 'aurora', title: 'Aurora possible tonight', body: `Kp ${kp.max24h.toFixed(1)} forecast, enough to see it from ${locName} if skies are clear.` });
+        }
+      } catch {}
+      if (!alive) return;
+      setAlerts(found);
+      try { if (localStorage.getItem('sg_alerts_on') === '1') found.forEach(f => { notify(f); }); } catch {}
+    };
+    run();
+    const t = setInterval(run, 10 * 60 * 1000);
+    const vis = () => { if (document.visibilityState === 'visible') run(); };
+    document.addEventListener('visibilitychange', vis);
+    return () => { alive = false; clearInterval(t); document.removeEventListener('visibilitychange', vis); };
+  }, [lat, lon, locName, places, checkTick]);
   const select = (place: Location) => {
     setManual(place);
     try { localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(place)); } catch {}
@@ -71,16 +112,21 @@ export default function StormGridApp() {
         {tab === 'today' && <>
           <section className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature">{Math.round(data.current.temperature)}<sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
           <DayPlanner data={data}/>
+          <OutsideScoreCard data={data}/>
+          <DaycareRun data={data}/>
+          <AlertsCard items={alerts} places={places} location={location} onCheck={() => setCheckTick(t => t + 1)}/>
           <div className="section-heading"><h2>The next 48 hours</h2><button onClick={()=>setTab('forecast')}>See the week ↗</button></div><HourlyForecast hourly={data.hourly}/>
           <button className="details-button" onClick={()=>setDetails(!details)} aria-expanded={details}>{details ? '− Less detail' : '+ Weather nerd mode'}<span>Wind, UV, sun, moon & air quality</span></button>
           {details && <div className="detail-grid"><WindAtmosphere current={data.current} pressureTrend={data.hourly.length > 3 ? (data.hourly[3].pressure - data.hourly[0].pressure > 1 ? "rising" : data.hourly[3].pressure - data.hourly[0].pressure < -1 ? "falling" : "steady") : "steady"}/><PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0}/><UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon}/><SunMoon sun={data.sun} moon={data.moon}/><AstronomySeasons astronomy={data.astronomy} dayLength={data.sun.dayLength}/><FeelsLike current={data.current}/>{data.airQuality && <AirQuality airQuality={data.airQuality}/>}</div>}
         </>}
-        {tab === 'forecast' && <><div className="section-heading"><h1>A week of possibilities.</h1></div><WeeklyForecast daily={data.daily}/><div className="section-heading"><h2>Hour by hour</h2></div><HourlyForecast hourly={data.hourly}/></>}
-        {tab === 'live' && <><div className="section-heading"><h1>Beyond the forecast.</h1></div><LiveDashboard data={extra.data} loading={extra.loading} onRefresh={extra.refresh} location={data.location}/></>}
+        {tab === 'radar' && <><div className="section-heading"><h1>What's coming.</h1></div><Radar location={data.location} mode={mode === 'light' ? 'light' : 'dark'}/></>}
+        {tab === 'forecast' && <><div className="section-heading"><h1>A week of possibilities.</h1></div><WeeklyForecast daily={data.daily}/><HistoryCards location={data.location}/><div className="section-heading"><h2>Hour by hour</h2></div><HourlyForecast hourly={data.hourly}/></>}
+        {tab === 'sky' && <SkyView data={data}/>}
+        {tab === 'live' && <><div className="section-heading"><h1>Beyond the forecast.</h1></div><LiveDashboard data={extra.data} loading={extra.loading} onRefresh={extra.refresh} location={data.location} weather={data}/></>}
         <footer className="day-footer">Model forecasts, not official weather warnings. Conditions can change.<br/><a href="https://www.metservice.com/warnings/home">Check MetService NZ warnings ↗</a></footer>
       </>}
     </main>
-    <nav className="day-nav" aria-label="Forecast views">{(['today','forecast','live'] as const).map((t,i)=><button key={t} className={tab === t ? 'active' : ''} aria-current={tab === t ? 'page' : undefined} onClick={()=>setTab(t)}><span>{['◉','▤','◎'][i]}</span>{['Today','Week','Live'][i]}</button>)}</nav>
+    <nav className="day-nav" aria-label="Forecast views">{(['today','radar','forecast','sky','live'] as const).map((t,i)=><button key={t} className={tab === t ? 'active' : ''} aria-current={tab === t ? 'page' : undefined} onClick={()=>setTab(t)}><span>{['◉','☂','▤','✦','◎'][i]}</span>{['Today','Radar','Week','Sky','Live'][i]}</button>)}</nav>
     {search && <LocationSearch onSelect={select} onClose={()=>setSearch(false)} onRequestGps={()=>{ setManual(null); requestPermission(); }}/>}
   </div>;
 }
