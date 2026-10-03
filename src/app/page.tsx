@@ -17,7 +17,7 @@ import { UVSolar } from '@/components/UVSolar';
 import { AstronomySeasons } from '@/components/AstronomySeasons';
 import { FeelsLike } from '@/components/FeelsLike';
 import { AirQuality } from '@/components/AirQuality';
-import { Ambient, CountUp, useTilt } from '@/components/v2/Motion';
+import { Ambient, CountUp, useLivingUI, useTilt } from '@/components/v2/Motion';
 import { Radar } from '@/components/v2/Radar';
 import { SkyView } from '@/components/v2/SkyTab';
 import { HistoryCards } from '@/components/v2/HistoryCards';
@@ -53,6 +53,7 @@ export default function StormGridApp() {
   useEffect(() => { queueMicrotask(() => { try { const saved = JSON.parse(localStorage.getItem(PLACES_KEY) || '[]'); if (Array.isArray(saved)) setPlaces(saved.filter(p => typeof p.name === 'string' && Number.isFinite(p.latitude) && Number.isFinite(p.longitude))); } catch {} }); }, []);
   const heroRef = useRef<HTMLElement>(null);
   useTilt(heroRef, tab === 'today' && !!data);
+  useLivingUI();
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [checkTick, setCheckTick] = useState(0);
   const lat = location?.latitude, lon = location?.longitude, locName = location?.name;
@@ -114,7 +115,7 @@ export default function StormGridApp() {
       {data && <>
         <div className="forecast-status" role="status">{loading ? 'Updating forecast…' : isStale ? 'Saved forecast · may be out of date' : `Updated ${lastUpdated ? formatRelativeTime(lastUpdated) : 'just now'}`}<span>Open-Meteo · {data.location.timezone || 'local time'}</span></div>
         {tab === 'today' && <>
-          <section ref={heroRef} className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div className="hero-sky" aria-hidden="true"><i className="cloud c1"/><i className="cloud c2"/><i className="cloud c3"/><i className="glare"/></div><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature"><CountUp value={Math.round(data.current.temperature)}/><sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
+          <section ref={heroRef} className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div className="hero-sky" aria-hidden="true"><i className="cloud c1"/><i className="cloud c2"/><i className="cloud c3"/><i className="glare"/></div><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><div className="holo" aria-hidden="true">{[0,30,60,90,120,150].map(a=><i key={a} style={{transform:`rotateY(${a}deg)`}}/>)}{[-.44,-.28,0,.28,.44].map(z=><b key={z} style={{transform:`rotateX(90deg) translateZ(calc(var(--s) * ${z})) scale(${Math.sqrt(1-4*z*z).toFixed(3)})`}}/>)}</div><span className="big-temperature"><CountUp value={Math.round(data.current.temperature)}/><sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong><CountUp value={Math.round(data.current.windSpeed)}/> <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
           <DayPlanner data={data}/>
           <OutsideScoreCard data={data}/>
           <DaycareRun data={data}/>
