@@ -17,13 +17,13 @@ import { UVSolar } from '@/components/UVSolar';
 import { AstronomySeasons } from '@/components/AstronomySeasons';
 import { FeelsLike } from '@/components/FeelsLike';
 import { AirQuality } from '@/components/AirQuality';
-import { Ambient, CountUp, Ticker, Wave, useTilt } from '@/components/v2/Motion';
+import { Ambient, CountUp, useTilt } from '@/components/v2/Motion';
 import { Radar } from '@/components/v2/Radar';
 import { SkyView } from '@/components/v2/SkyTab';
 import { HistoryCards } from '@/components/v2/HistoryCards';
 import { AlertsCard, DaycareRun, OutsideScoreCard, notify, type AlertItem } from '@/components/v2/TodayExtras';
 import { fetchRainSoon, fetchKpForecast } from '@/lib/extraApis';
-import { auroraKpNeeded, clock, minsOf } from '@/lib/insights';
+import { auroraKpNeeded } from '@/lib/insights';
 import { WeatherIcon } from '@/components/ui/WeatherIcon';
 import { wmoLabel, formatRelativeTime } from '@/lib/formatters';
 import { STORAGE_KEYS } from '@/lib/constants';
@@ -99,16 +99,12 @@ export default function StormGridApp() {
     setPlaces(next);
     try { localStorage.setItem(PLACES_KEY, JSON.stringify(next)); } catch {}
   };
-  const wc = data?.current.weatherCode ?? 2;
-  const world = !data ? 'sun' : wc >= 95 ? 'storm' : ((wc >= 51 && wc <= 67) || (wc >= 80 && wc <= 82)) ? 'rain' : (wc >= 71 && wc <= 77) || wc === 85 || wc === 86 ? 'snow' : wc >= 2 ? 'cloud' : data.current.isDay ? 'sun' : 'night';
-  const tickerItems = data ? [`${data.location.name} ${Math.round(data.current.temperature)}°`, `Feels ${Math.round(data.current.feelsLike)}°`, `Rain ${data.daily[0]?.precipitationProbability ?? 0}% today`, `Wind ${Math.round(data.current.windSpeed)} km/h`, `UV ${data.current.uvIndex.toFixed(1)}`, `Humidity ${Math.round(data.current.humidity)}%`, `Sunset ${clock(minsOf(data.daily[0].sunset))}`] : ['Make room for outside', 'Rain radar', 'Outside score', 'Aurora watch', 'Golden hour'];
-  return <div className="day-app" data-world={world}>
+  return <div className="day-app">
     <Ambient code={data?.current.weatherCode} isDay={data?.current.isDay}/>
     <header className="day-header"><a href="#main" className="day-brand"><span className="brand-orbit">◎</span> StormGrid<span className="brand-note">A little more outside.</span></a>
       <div className="header-actions"><button aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(mode === 'light' ? 'dark' : 'light')}>{mode === 'light' ? '◐' : '☀'}</button><button aria-label="Refresh forecast" disabled={loading || !location} onClick={refresh}>↻</button></div>
     </header>
     <main id="main" className="day-main">
-      <Ticker items={tickerItems}/>
       <div className="day-toolbar"><button className="place-button" onClick={() => setSearch(true)}>⌖ {location?.name || 'Choose your place'} <span>⌄</span></button>{location && <button className="save-button" onClick={toggleSave} aria-label={places.some(p=>samePlace(p,location)) ? 'Unsave this place' : 'Save this place'}>{places.some(p=>samePlace(p,location)) ? '★ Saved' : '☆ Save'}</button>}</div>
       {places.length > 0 && <div className="place-chips" aria-label="Saved places">{places.map(p=><button className={location && samePlace(p,location) ? 'selected' : ''} key={`${p.latitude},${p.longitude}`} onClick={()=>select(p)}>{p.name}</button>)}</div>}
       {!location && <section className="welcome-card"><p className="eyebrow">YOUR DAY, NOT JUST THE NUMBERS</p><h1>Make room<br/>for outside.</h1><p>Know when the rain arrives, find a calmer window, and take the day as it comes.</p><button className="primary-button" onClick={()=>setSearch(true)}>Find your forecast <span>↗</span></button><button className="text-button" onClick={requestPermission} disabled={gpsLoading}>{gpsLoading ? 'Finding your location…' : 'Use my current location'}</button><div className="starter-places">{starterPlaces.map(p=><button key={p.name} onClick={()=>select(p)}>{p.name} ↗</button>)}</div><small>No location permission needed. Places you save stay on this device.</small></section>}
@@ -118,7 +114,7 @@ export default function StormGridApp() {
       {data && <>
         <div className="forecast-status" role="status">{loading ? 'Updating forecast…' : isStale ? 'Saved forecast · may be out of date' : `Updated ${lastUpdated ? formatRelativeTime(lastUpdated) : 'just now'}`}<span>Open-Meteo · {data.location.timezone || 'local time'}</span></div>
         {tab === 'today' && <>
-          <section ref={heroRef} className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div className="hero-sky" aria-hidden="true"><i className="cloud c1"/><i className="cloud c2"/><i className="cloud c3"/><i className="glare"/></div><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><span className="sticker">{data.daily[0]?.precipitationProbability ?? 0}% rain today</span><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature"><CountUp value={Math.round(data.current.temperature)}/><sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div><Wave/></section>
+          <section ref={heroRef} className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div className="hero-sky" aria-hidden="true"><i className="cloud c1"/><i className="cloud c2"/><i className="cloud c3"/><i className="glare"/></div><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature"><CountUp value={Math.round(data.current.temperature)}/><sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
           <DayPlanner data={data}/>
           <OutsideScoreCard data={data}/>
           <DaycareRun data={data}/>
