@@ -33,6 +33,7 @@ export function WeeklyForecast({ daily }: WeeklyForecastProps) {
     <CollapsibleCard
       title="7-Day Forecast"
       summary={summary}
+      defaultOpen
       accentColor="blue"
       icon={icon}
     >
