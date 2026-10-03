@@ -34,6 +34,7 @@ export function HourlyForecast({ hourly }: HourlyForecastProps) {
     <CollapsibleCard
       title="Hourly Forecast"
       summary={summary}
+      defaultOpen
       accentColor="cyan"
       icon={icon}
     >
