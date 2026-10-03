@@ -874,3 +874,60 @@ p.run-note { margin-top:0; }
 .day-app .nav-glow { background:linear-gradient(180deg,rgba(93,255,196,.14),rgba(155,107,255,.08)); border:1px solid rgba(93,255,196,.4); border-radius:12px; box-shadow:0 0 20px -4px rgba(93,255,196,.5),inset 0 -2px 0 var(--bio); }
 
 @media (prefers-reduced-motion:reduce) { .day-app .temperature-row::before,.day-app .temperature-row::after { animation:none; } }
+
+/* =====================================================================
+   v5 YEAR 3000: liquid glass, water, carbon. Symmetric, centred, fluid.
+   Nothing wider than the viewport.
+   ===================================================================== */
+html,body { overflow-x:hidden; max-width:100%; }
+.day-app { max-width:100vw; overflow-x:clip; --glass:linear-gradient(155deg,rgba(150,255,235,.10),rgba(120,140,255,.05) 45%,rgba(255,120,230,.06));
+  --carbon:conic-gradient(from 90deg at 2px 2px,#0000 25%,rgba(255,255,255,.04) 0) 0 0/7px 7px; }
+.day-app * { min-width:0; }
+.day-main,.day-header { max-width:100%; }
+
+/* ground: deep water with carbon weave and slow caustic glows */
+.ambient::before { background:
+  radial-gradient(55% 35% at 50% -5%,rgba(93,255,196,.30),transparent 70%),
+  radial-gradient(60% 40% at 100% 45%,rgba(120,110,255,.26),transparent 70%),
+  radial-gradient(60% 40% at 0% 75%,rgba(255,92,225,.16),transparent 70%), #03050c; }
+.ambient::after { opacity:.9; background:var(--carbon); background-size:7px 7px; -webkit-mask-image:linear-gradient(180deg,#000,transparent 85%); mask-image:linear-gradient(180deg,#000,transparent 85%); }
+
+/* header: centred, calm */
+.day-brand { letter-spacing:.22em; font-size:13px; }
+.place-button { font-size:clamp(22px,7vw,30px)!important; letter-spacing:.04em; }
+.forecast-status { font-size:10px; }
+
+/* hero: mirror-symmetric, centred */
+.day-app .now-card { text-align:center; overflow:hidden; border-radius:40px; padding:26px 18px 20px; background:var(--glass),var(--carbon),rgba(6,12,26,.7); border:1px solid rgba(160,255,235,.22); box-shadow:inset 0 1px 0 rgba(255,255,255,.18),inset 0 -30px 60px -30px rgba(93,255,196,.22),0 30px 60px -30px rgba(93,255,196,.3); }
+.day-app .now-card > div:not(.hero-sky):not(.temperature-row):not(.now-metrics) { display:flex; flex-direction:column; align-items:center; }
+.day-app .now-card .eyebrow::before { content:''; }
+.day-app .now-card h1 { font-size:clamp(20px,6vw,28px); letter-spacing:.14em; }
+.day-app .temperature-row { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; margin:14px auto 12px; width:min(100%,260px); aspect-ratio:1; border-radius:50%; position:relative; }
+.day-app .big-temperature { font-size:clamp(96px,30vw,130px); line-height:1; margin:0; }
+.day-app .temperature-row > :last-child { width:56px; height:56px; }
+.day-app .temperature-row::before { inset:0; right:auto; top:0; width:100%; height:100%; margin:0; border:1px solid rgba(93,255,196,.30); border-top-color:var(--pink); border-bottom-color:var(--vio); border-radius:50%; animation:orbit 22s linear infinite, breathe 6s ease-in-out infinite; box-shadow:0 0 40px -6px rgba(93,255,196,.35),inset 0 0 40px -10px rgba(120,110,255,.4); }
+.day-app .temperature-row::after { inset:14%; right:auto; top:auto; width:auto; height:auto; margin:0; border:1px dashed rgba(155,107,255,.35); border-radius:50%; animation:orbit 34s linear infinite reverse; }
+@keyframes breathe { 0%,100% { opacity:.55; } 50% { opacity:1; } }
+.day-app .now-metrics { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; border:0; padding:0; }
+.day-app .now-metrics > div { padding:12px 6px; border-radius:999px 999px 999px 999px / 50%; background:var(--glass),rgba(6,12,26,.55); border:1px solid rgba(160,255,235,.2); box-shadow:inset 0 1px 0 rgba(255,255,255,.14),inset 0 -10px 18px -10px rgba(93,255,196,.3); text-align:center; }
+.day-app .now-metrics strong { font-size:20px; display:block; }
+.day-app .now-metrics small { display:block; font-size:10px; opacity:.7; }
+
+/* cards: liquid glass slabs, symmetrical radius, breathing sheen, no brackets */
+.day-app .planner-card,.day-app .v2-card,.day-app .stat-card,.day-app .welcome-card,.day-app .detail-grid > *,.day-app .loading-card {
+  border-radius:32px; border:1px solid rgba(160,255,235,.18); background:var(--glass),var(--carbon),rgba(6,12,26,.72);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),inset 0 -26px 50px -34px rgba(93,255,196,.28),0 24px 50px -30px rgba(0,0,0,.9); overflow:hidden; max-width:100%; }
+.day-app .planner-card::before,.day-app .v2-card::before { inset:0; background:radial-gradient(70% 60% at 20% 0%,rgba(150,255,235,.16),transparent 60%),radial-gradient(60% 50% at 90% 100%,rgba(255,92,225,.10),transparent 60%); filter:none; border-radius:inherit; animation:breathe 7s ease-in-out infinite; z-index:0; }
+.day-app .v2-card:nth-of-type(even)::before,.day-app .planner-card:nth-of-type(even)::before { animation-delay:-3s; }
+.day-app .planner-card > *,.day-app .v2-card > * { position:relative; z-index:1; }
+.day-app .section-heading h1 { font-size:clamp(22px,7vw,30px); letter-spacing:.08em; }
+.day-app .section-heading h2,.day-app .v2-card h2,.day-app .planner-card h2 { letter-spacing:.06em; font-size:clamp(15px,4.4vw,19px); }
+.day-app .pill { border-radius:999px; }
+.day-app .window-mark { border-radius:50%; }
+.day-app .primary-button,.day-app .activity-tabs button.active,.day-app .chip-row button.active,.day-app .place-chips button.selected { border-radius:999px; background:linear-gradient(120deg,rgba(93,255,196,.95),rgba(120,200,255,.9) 50%,rgba(155,107,255,.95)); box-shadow:inset 0 1px 0 rgba(255,255,255,.5),0 0 24px -4px rgba(93,255,196,.6); }
+.day-app .activity-tabs,.day-app .chip-row button,.day-app .save-button,.day-app .place-chips button,.day-app .header-actions button { border-radius:999px; background:var(--glass),rgba(6,12,26,.6); border:1px solid rgba(160,255,235,.22); }
+.day-app .radar-stage { border-radius:26px; }
+.day-app .quake-list b { border-radius:50%; }
+.day-app .day-nav { border-radius:999px; background:var(--glass),rgba(4,7,16,.82); width:min(420px,calc(100vw - 24px)); box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 0 34px -8px rgba(93,255,196,.4),0 16px 40px -12px #000; }
+.day-app .nav-glow { border-radius:999px; background:linear-gradient(180deg,rgba(93,255,196,.22),rgba(120,110,255,.12)); box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 0 20px -2px rgba(93,255,196,.6); }
+@media (prefers-reduced-motion:reduce) { .day-app .temperature-row::before,.day-app .temperature-row::after,.day-app .v2-card::before,.day-app .planner-card::before { animation:none!important; } }
