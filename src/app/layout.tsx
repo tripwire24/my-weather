@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { JetBrains_Mono, Space_Mono } from 'next/font/google';
+import { JetBrains_Mono, Space_Mono, Bricolage_Grotesque } from 'next/font/google';
 import '@/app/globals.css';
 
 const jetbrainsMono = JetBrains_Mono({
@@ -14,6 +14,12 @@ const spaceMono = Space_Mono({
   variable: '--font-space',
   display: 'swap',
   weight: ['400', '700'],
+});
+
+const display = Bricolage_Grotesque({
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
 });
 
 export const metadata: Metadata = {
@@ -50,7 +56,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${jetbrainsMono.variable} ${spaceMono.variable}`}>
+    <html lang="en" className={`${jetbrainsMono.variable} ${spaceMono.variable} ${display.variable}`}>
       <head>
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
