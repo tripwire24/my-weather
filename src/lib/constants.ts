@@ -47,18 +47,18 @@ export const UV_CATEGORIES = [
   { max: 2,   label: 'Low',       color: '#4cd89d', safeMinutes: null },
   { max: 5,   label: 'Moderate',  color: '#ffff00', safeMinutes: 60 },
   { max: 7,   label: 'High',      color: '#ff9900', safeMinutes: 30 },
-  { max: 10,  label: 'Very High', color: '#e85c78', safeMinutes: 15 },
-  { max: Infinity, label: 'Extreme', color: '#c874e8', safeMinutes: 10 },
+  { max: 10,  label: 'Very High', color: '#ff3b5c', safeMinutes: 15 },
+  { max: Infinity, label: 'Extreme', color: '#ff8a1f', safeMinutes: 10 },
 ];
 
 // AQI categories
 export const AQI_CATEGORIES = [
   { max: 20,  label: 'Good',      color: '#4cd89d' },
-  { max: 40,  label: 'Fair',      color: '#5ce0d6' },
+  { max: 40,  label: 'Fair',      color: '#00e5ff' },
   { max: 60,  label: 'Moderate',  color: '#ffff00' },
   { max: 80,  label: 'Poor',      color: '#ff9900' },
-  { max: 100, label: 'Very Poor', color: '#e85c78' },
-  { max: Infinity, label: 'Hazardous', color: '#c874e8' },
+  { max: 100, label: 'Very Poor', color: '#ff3b5c' },
+  { max: Infinity, label: 'Hazardous', color: '#ff8a1f' },
 ];
 
 // Local storage keys
