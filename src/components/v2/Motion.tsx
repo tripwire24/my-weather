@@ -97,12 +97,3 @@ export function MoonSphere({ phase }: { phase: number }) {
   const x = waxing ? -phase * 2 * 100 : (1 - (phase - 0.5) * 2) * 100;
   return <div className="moon-sphere" role="img" aria-label="Moon phase"><div className="moon-lit" /><div className="moon-dark" style={{ transform: `translateX(${x}%)` }} /></div>;
 }
-
-export function Ticker({ items }: { items: string[] }) {
-  const row = items.map((t, i) => <span key={i}>{t}<b aria-hidden="true">✺</b></span>);
-  return <div className="ticker" aria-label={items.join(', ')}><div className="ticker-track" aria-hidden="true"><div>{row}</div><div>{row}</div></div></div>;
-}
-
-export function Wave() {
-  return <svg className="hero-wave" viewBox="0 0 1200 60" preserveAspectRatio="none" aria-hidden="true"><path d="M0 30 Q 100 0 200 30 T 400 30 T 600 30 T 800 30 T 1000 30 T 1200 30 V60 H0Z" /></svg>;
-}
