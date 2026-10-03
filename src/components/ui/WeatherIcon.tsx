@@ -13,7 +13,7 @@ interface WeatherIconProps {
   className?: string;
 }
 
-export function WeatherIcon({ code, isDay = true, size = 32, color = '#5ce0d6', className = '' }: WeatherIconProps) {
+export function WeatherIcon({ code, isDay = true, size = 32, color = '#00e5ff', className = '' }: WeatherIconProps) {
   const icon = getIconSVG(code, isDay, size, color);
   return (
     <svg
@@ -251,13 +251,13 @@ function ThunderstormIcon({ cx, cy, r, sw, c }: IconBaseProps) {
       <CloudShape cx={cx} cy={cy - r * 0.25} r={r * 0.65} sw={sw} c={c} />
       {/* Lightning bolt */}
       <path
-        stroke="#e8a830"
+        stroke="#ff9f1c"
         fill="none"
         strokeWidth={sw * 1.2}
         strokeLinecap="round"
         strokeLinejoin="round"
         d={`M ${cx + r * 0.1} ${cy + r * 0.3} L ${cx - r * 0.1} ${cy + r * 0.55} L ${cx + r * 0.05} ${cy + r * 0.55} L ${cx - r * 0.15} ${cy + r * 0.85}`}
-        style={{ filter: 'drop-shadow(0 0 4px #e8a830)' }}
+        style={{ filter: 'drop-shadow(0 0 4px #ff9f1c)' }}
       />
     </g>
   );
