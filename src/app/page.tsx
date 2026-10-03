@@ -14,6 +14,8 @@ import { WindAtmosphere } from '@/components/WindAtmosphere';
 import { PrecipitationStorms } from '@/components/PrecipitationStorms';
 import { SunMoon } from '@/components/SunMoon';
 import { UVSolar } from '@/components/UVSolar';
+import { AstronomySeasons } from '@/components/AstronomySeasons';
+import { FeelsLike } from '@/components/FeelsLike';
 import { AirQuality } from '@/components/AirQuality';
 import { WeatherIcon } from '@/components/ui/WeatherIcon';
 import { wmoLabel, formatRelativeTime } from '@/lib/formatters';
@@ -71,7 +73,7 @@ export default function StormGridApp() {
           <DayPlanner data={data}/>
           <div className="section-heading"><h2>The next 48 hours</h2><button onClick={()=>setTab('forecast')}>See the week ↗</button></div><HourlyForecast hourly={data.hourly}/>
           <button className="details-button" onClick={()=>setDetails(!details)} aria-expanded={details}>{details ? '− Less detail' : '+ Weather nerd mode'}<span>Wind, UV, sun, moon & air quality</span></button>
-          {details && <div className="detail-grid"><WindAtmosphere current={data.current} pressureTrend="steady"/><PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0}/><UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon}/><SunMoon sun={data.sun} moon={data.moon}/>{data.airQuality && <AirQuality airQuality={data.airQuality}/>}</div>}
+          {details && <div className="detail-grid"><WindAtmosphere current={data.current} pressureTrend={data.hourly.length > 3 ? (data.hourly[3].pressure - data.hourly[0].pressure > 1 ? "rising" : data.hourly[3].pressure - data.hourly[0].pressure < -1 ? "falling" : "steady") : "steady"}/><PrecipitationStorms current={data.current} hourly={data.hourly} dailyPrecipTotal={data.daily[0]?.precipitation ?? 0}/><UVSolar current={data.current} hourly={data.hourly} solarNoon={data.sun.solarNoon}/><SunMoon sun={data.sun} moon={data.moon}/><AstronomySeasons astronomy={data.astronomy} dayLength={data.sun.dayLength}/><FeelsLike current={data.current}/>{data.airQuality && <AirQuality airQuality={data.airQuality}/>}</div>}
         </>}
         {tab === 'forecast' && <><div className="section-heading"><h1>A week of possibilities.</h1></div><WeeklyForecast daily={data.daily}/><div className="section-heading"><h2>Hour by hour</h2></div><HourlyForecast hourly={data.hourly}/></>}
         {tab === 'live' && <><div className="section-heading"><h1>Beyond the forecast.</h1></div><LiveDashboard data={extra.data} loading={extra.loading} onRefresh={extra.refresh} location={data.location}/></>}
