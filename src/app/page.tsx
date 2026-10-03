@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useTheme } from '@/hooks/useTheme';
@@ -17,6 +17,7 @@ import { UVSolar } from '@/components/UVSolar';
 import { AstronomySeasons } from '@/components/AstronomySeasons';
 import { FeelsLike } from '@/components/FeelsLike';
 import { AirQuality } from '@/components/AirQuality';
+import { Ambient, CountUp, useTilt } from '@/components/v2/Motion';
 import { Radar } from '@/components/v2/Radar';
 import { SkyView } from '@/components/v2/SkyTab';
 import { HistoryCards } from '@/components/v2/HistoryCards';
@@ -50,6 +51,8 @@ export default function StormGridApp() {
   useAutoRefresh(refresh, !!location);
   const extra = useExtraData(tab === 'live' ? location : null);
   useEffect(() => { queueMicrotask(() => { try { const saved = JSON.parse(localStorage.getItem(PLACES_KEY) || '[]'); if (Array.isArray(saved)) setPlaces(saved.filter(p => typeof p.name === 'string' && Number.isFinite(p.latitude) && Number.isFinite(p.longitude))); } catch {} }); }, []);
+  const heroRef = useRef<HTMLElement>(null);
+  useTilt(heroRef, tab === 'today' && !!data);
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [checkTick, setCheckTick] = useState(0);
   const lat = location?.latitude, lon = location?.longitude, locName = location?.name;
@@ -97,6 +100,7 @@ export default function StormGridApp() {
     try { localStorage.setItem(PLACES_KEY, JSON.stringify(next)); } catch {}
   };
   return <div className="day-app">
+    <Ambient code={data?.current.weatherCode} isDay={data?.current.isDay}/>
     <header className="day-header"><a href="#main" className="day-brand"><span className="brand-orbit">◎</span> StormGrid<span className="brand-note">A little more outside.</span></a>
       <div className="header-actions"><button aria-label={`Switch to ${mode === 'light' ? 'dark' : 'light'} theme`} onClick={() => setTheme(mode === 'light' ? 'dark' : 'light')}>{mode === 'light' ? '◐' : '☀'}</button><button aria-label="Refresh forecast" disabled={loading || !location} onClick={refresh}>↻</button></div>
     </header>
@@ -110,7 +114,7 @@ export default function StormGridApp() {
       {data && <>
         <div className="forecast-status" role="status">{loading ? 'Updating forecast…' : isStale ? 'Saved forecast · may be out of date' : `Updated ${lastUpdated ? formatRelativeTime(lastUpdated) : 'just now'}`}<span>Open-Meteo · {data.location.timezone || 'local time'}</span></div>
         {tab === 'today' && <>
-          <section className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature">{Math.round(data.current.temperature)}<sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
+          <section ref={heroRef} className={`now-card ${data.current.isDay ? 'is-day' : 'is-night'}`}><div className="hero-sky" aria-hidden="true"><i className="cloud c1"/><i className="cloud c2"/><i className="cloud c3"/><i className="glare"/></div><div><p className="eyebrow">RIGHT NOW</p><h1>{wmoLabel(data.current.weatherCode)}</h1><p>Feels like {Math.round(data.current.feelsLike)}° · High {Math.round(data.daily[0]?.tempMax)}° / Low {Math.round(data.daily[0]?.tempMin)}°</p></div><div className="temperature-row"><span className="big-temperature"><CountUp value={Math.round(data.current.temperature)}/><sup>°</sup></span><WeatherIcon code={data.current.weatherCode} isDay={data.current.isDay} size={96}/></div><div className="now-metrics"><div><span>Wind</span><strong>{Math.round(data.current.windSpeed)} <small>km/h</small></strong></div><div><span>Rain today</span><strong>{data.daily[0]?.precipitation.toFixed(1)} <small>mm</small></strong></div><div><span>UV now</span><strong>{data.current.uvIndex.toFixed(1)} <small>{data.current.uvIndex >= 3 ? 'Protection' : 'Low'}</small></strong></div></div></section>
           <DayPlanner data={data}/>
           <OutsideScoreCard data={data}/>
           <DaycareRun data={data}/>
@@ -126,7 +130,7 @@ export default function StormGridApp() {
         <footer className="day-footer">Model forecasts, not official weather warnings. Conditions can change.<br/><a href="https://www.metservice.com/warnings/home">Check MetService NZ warnings ↗</a></footer>
       </>}
     </main>
-    <nav className="day-nav" aria-label="Forecast views">{(['today','radar','forecast','sky','live'] as const).map((t,i)=><button key={t} className={tab === t ? 'active' : ''} aria-current={tab === t ? 'page' : undefined} onClick={()=>setTab(t)}><span>{['◉','☂','▤','✦','◎'][i]}</span>{['Today','Radar','Week','Sky','Live'][i]}</button>)}</nav>
+    <nav className="day-nav" aria-label="Forecast views"><i className="nav-glow" aria-hidden="true" style={{ transform: `translateX(${(['today','radar','forecast','sky','live'] as const).indexOf(tab) * 100}%)` }}/>{(['today','radar','forecast','sky','live'] as const).map((t,i)=><button key={t} className={tab === t ? 'active' : ''} aria-current={tab === t ? 'page' : undefined} onClick={()=>setTab(t)}><span>{['◉','☂','▤','✦','◎'][i]}</span>{['Today','Radar','Week','Sky','Live'][i]}</button>)}</nav>
     {search && <LocationSearch onSelect={select} onClose={()=>setSearch(false)} onRequestGps={()=>{ setManual(null); requestPermission(); }}/>}
   </div>;
 }
@@ -140,5 +144,5 @@ function DayPlanner({ data }: { data: WeatherData }) {
   const window = start >= 0 ? hours.slice(start,start+limits.duration) : [];
   const rain = hours.find(h=>h.precipitationProbability >= 50 || h.precipitation >= .5);
   const maxChance = hours.length ? Math.max(...hours.map(h=>h.precipitationProbability)) : 0;
-  return <section className="planner-card"><div className="section-heading"><h2>Your outside window</h2><span className="pill">NEXT 24H</span></div><div className="activity-tabs" aria-label="Choose activity">{(['walk','washing','cycling'] as const).map(a=><button key={a} aria-pressed={activity === a} className={activity === a ? 'active' : ''} onClick={()=>setActivity(a)}>{a === 'walk' ? '↗ A walk' : a === 'washing' ? '☀ Washing' : '↝ A ride'}</button>)}</div><div className="window-result"><span className="window-mark">{window.length ? '↗' : '☂'}</span><div><h3>{window.length ? `${hourLabel(window[0].time)}–${hourLabel(window[window.length-1].time.replace(/T(\d{2})/, (_,h)=>`T${String((Number(h)+1)%24).padStart(2,'0')}`))}` : 'No clear window yet'}</h3><p>{window.length ? `${window[0].time.slice(0,10) === hours[0]?.time.slice(0,10) ? 'Today' : 'Tomorrow'} · ${Math.round(Math.min(...window.map(h=>h.temperature)))}–${Math.round(Math.max(...window.map(h=>h.temperature)))}° · up to ${Math.max(...window.map(h=>h.precipitationProbability))}% rain chance` : 'Try another activity or check again later.'}</p></div></div><p className="rain-summary">{rain ? `Rain looks more likely around ${hourLabel(rain.time)}${rain.time.slice(0,10) !== hours[0]?.time.slice(0,10) ? ' tomorrow' : ''}.` : `No strong rain signal in the next 24 hours (${maxChance}% peak chance).`}</p><div className="rain-strip" aria-label="Hourly rain probability over the next 12 hours">{hours.slice(0,12).map(h=><div key={h.time} title={`${hourLabel(h.time)}: ${h.precipitationProbability}% chance`}><span>{h.precipitationProbability}%</span><div className="rain-bar"><i style={{height:`${Math.max(4,h.precipitationProbability)}%`}}/></div><small>{hourLabel(h.time)}</small></div>)}</div><details className="planner-method"><summary>How this window is picked</summary><p>{limits.duration} consecutive daylight hours, rain chance ≤{limits.rain}%, rain &lt;0.2 mm/h, wind ≤{limits.wind} km/h and gusts ≤{limits.gust} km/h. {activity === 'washing' ? 'A dry window, not a drying-time guarantee. ' : ''}UV, road and local conditions still matter. This is a forecast estimate, not safety advice.</p></details></section>;
+  return <section className="planner-card"><div className="section-heading"><h2>Your outside window</h2><span className="pill">NEXT 24H</span></div><div className="activity-tabs" aria-label="Choose activity">{(['walk','washing','cycling'] as const).map(a=><button key={a} aria-pressed={activity === a} className={activity === a ? 'active' : ''} onClick={()=>setActivity(a)}>{a === 'walk' ? '↗ A walk' : a === 'washing' ? '☀ Washing' : '↝ A ride'}</button>)}</div><div className="window-result"><span className="window-mark">{window.length ? '↗' : '☂'}</span><div><h3>{window.length ? `${hourLabel(window[0].time)}–${hourLabel(window[window.length-1].time.replace(/T(\d{2})/, (_,h)=>`T${String((Number(h)+1)%24).padStart(2,'0')}`))}` : 'No clear window yet'}</h3><p>{window.length ? `${window[0].time.slice(0,10) === hours[0]?.time.slice(0,10) ? 'Today' : 'Tomorrow'} · ${Math.round(Math.min(...window.map(h=>h.temperature)))}–${Math.round(Math.max(...window.map(h=>h.temperature)))}° · up to ${Math.max(...window.map(h=>h.precipitationProbability))}% rain chance` : 'Try another activity or check again later.'}</p></div></div><p className="rain-summary">{rain ? `Rain looks more likely around ${hourLabel(rain.time)}${rain.time.slice(0,10) !== hours[0]?.time.slice(0,10) ? ' tomorrow' : ''}.` : `No strong rain signal in the next 24 hours (${maxChance}% peak chance).`}</p><div className="rain-strip" aria-label="Hourly rain probability over the next 12 hours">{hours.slice(0,12).map((h,i)=><div key={h.time} title={`${hourLabel(h.time)}: ${h.precipitationProbability}% chance`}><span>{h.precipitationProbability}%</span><div className="rain-bar"><i style={{height:`${Math.max(4,h.precipitationProbability)}%`,['--i' as string]:i}}/></div><small>{hourLabel(h.time)}</small></div>)}</div><details className="planner-method"><summary>How this window is picked</summary><p>{limits.duration} consecutive daylight hours, rain chance ≤{limits.rain}%, rain &lt;0.2 mm/h, wind ≤{limits.wind} km/h and gusts ≤{limits.gust} km/h. {activity === 'washing' ? 'A dry window, not a drying-time guarantee. ' : ''}UV, road and local conditions still matter. This is a forecast estimate, not safety advice.</p></details></section>;
 }
