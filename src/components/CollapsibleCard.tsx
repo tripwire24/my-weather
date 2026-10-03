@@ -13,10 +13,10 @@ interface CollapsibleCardProps {
 }
 
 const ACCENT_STYLES = {
-  cyan:    { border: 'rgba(92, 224, 214,0.25)',  text: 'var(--sg-cyan)', glow: 'rgba(92, 224, 214,0.06)' },
-  magenta: { border: 'rgba(200, 116, 232,0.25)',  text: 'var(--sg-magenta)', glow: 'rgba(200, 116, 232,0.06)' },
-  blue:    { border: 'rgba(107, 140, 255,0.25)', text: 'var(--sg-blue)', glow: 'rgba(107, 140, 255,0.06)' },
-  amber:   { border: 'rgba(232, 168, 48,0.25)',  text: 'var(--sg-amber)', glow: 'rgba(232, 168, 48,0.06)' },
+  cyan:    { border: 'rgba(0, 229, 255,0.25)',  text: 'var(--sg-cyan)', glow: 'rgba(0, 229, 255,0.06)' },
+  magenta: { border: 'rgba(255, 138, 31,0.25)',  text: 'var(--sg-magenta)', glow: 'rgba(255, 138, 31,0.06)' },
+  blue:    { border: 'rgba(43, 120, 255,0.25)', text: 'var(--sg-blue)', glow: 'rgba(43, 120, 255,0.06)' },
+  amber:   { border: 'rgba(255, 159, 28,0.25)',  text: 'var(--sg-amber)', glow: 'rgba(255, 159, 28,0.06)' },
 };
 
 export function CollapsibleCard({
