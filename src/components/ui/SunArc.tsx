@@ -133,7 +133,7 @@ export function SunArc({
       <path
         d={fullArcPath}
         fill="none"
-        stroke="rgba(92, 224, 214,0.12)"
+        stroke="rgba(0, 229, 255,0.12)"
         strokeWidth={2}
         strokeDasharray="5 4"
         
@@ -293,7 +293,7 @@ export function SunArc({
           textAnchor="middle"
           fontSize={7.5}
           fontFamily="'JetBrains Mono', monospace"
-          fill="rgba(92, 224, 214,0.35)"
+          fill="rgba(0, 229, 255,0.35)"
         >
           {Math.round(clampedPos * 100)}% THROUGH THE DAY
         </text>
