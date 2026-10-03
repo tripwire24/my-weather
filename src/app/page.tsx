@@ -43,7 +43,7 @@ export default function StormGridApp() {
   const { mode, setTheme } = useTheme(data?.current.weatherCode);
   useAutoRefresh(refresh, !!location);
   const extra = useExtraData(tab === 'live' ? location : null);
-  useEffect(() => { try { setPlaces(JSON.parse(localStorage.getItem(PLACES_KEY) || '[]')); } catch {} }, []);
+  useEffect(() => { queueMicrotask(() => { try { const saved = JSON.parse(localStorage.getItem(PLACES_KEY) || '[]'); if (Array.isArray(saved)) setPlaces(saved.filter(p => typeof p.name === 'string' && Number.isFinite(p.latitude) && Number.isFinite(p.longitude))); } catch {} }); }, []);
   const select = (place: Location) => {
     setManual(place);
     try { localStorage.setItem(STORAGE_KEYS.LOCATION, JSON.stringify(place)); } catch {}
