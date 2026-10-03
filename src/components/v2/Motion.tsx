@@ -84,7 +84,7 @@ export function Ambient({ code, isDay }: { code?: number; isDay?: boolean }) {
   });
   const stars = Array.from({ length: isDay === false && !rain ? 28 : 0 }, (_, i) => ({ left: (i * 47) % 100, top: (i * 31) % 70, delay: (i % 7) * 0.6, size: 1 + (i % 3) }));
   return <div className={`ambient ${isDay === false ? 'night' : 'day'} ${rain ? 'is-rain' : ''} ${clear ? 'is-clear' : ''}`} aria-hidden="true">
-    <i className="blob b1" /><i className="blob b2" /><i className="blob b3" />
+    <i className="tron-floor" /><i className="tron-horizon" /><i className="blob b1" /><i className="blob b2" /><i className="blob b3" />
     {Array.from({ length: 14 }, (_, i) => <i key={`m${i}`} className="mote" style={{ left: `${(i * 41 + 7) % 100}%`, animationDelay: `${-((i * 13) % 20)}s`, animationDuration: `${16 + (i % 5) * 4}s`, width: 2 + (i % 3), height: 2 + (i % 3) }} />)}
     {clear && isDay !== false && <i className="sun-flare" />}
     {stars.map((s, i) => <i key={`s${i}`} className="star" style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}
@@ -151,9 +151,28 @@ export function useLivingUI() {
         if (el.getBoundingClientRect().top > innerHeight * 0.9) { el.classList.add('rv-pre'); io.observe(el); }
       });
     };
-    let sraf = 0; const mo = new MutationObserver(() => { if (!sraf) sraf = requestAnimationFrame(() => { sraf = 0; scan(); }); });
+    let sraf = 0; const mo = new MutationObserver(() => { scan(); if (!sraf) sraf = requestAnimationFrame(() => { sraf = 0; fx(); }); });
     const main = document.querySelector('.day-app'); if (main) mo.observe(main, { childList: true, subtree: true });
-    scan();
+    const fx = () => {
+      document.querySelectorAll<HTMLElement>('.detail-grid *, .day-main .space-y-2 *').forEach((el) => {
+        if (el.dataset.cu) return;
+        if (el.childElementCount === 0 && el.tagName !== 'path' && el.tagName !== 'circle') {
+          const m = /^(-?\d+(?:\.\d+)?)(.{0,8})$/.exec((el.textContent || '').trim());
+          if (m && !el.closest('svg') && el.childNodes.length === 1 && el.firstChild?.nodeType === 3) {
+            el.dataset.cu = '1'; const end = parseFloat(m[1]), dec = (m[1].split('.')[1] || '').length, suf = m[2], node = el.firstChild as Text, orig = node.nodeValue || '';
+            const t0 = performance.now(); const tick = (t: number) => { const k = Math.min(1, (t - t0) / 900), e = 1 - Math.pow(1 - k, 3); node.nodeValue = k < 1 ? `${(end * e).toFixed(dec)}${suf}` : orig; if (k < 1) requestAnimationFrame(tick); };
+            requestAnimationFrame(tick);
+          }
+        }
+        if (el.tagName === 'path' || el.tagName === 'polyline') {
+          const sv = el as unknown as SVGElement;
+          if (sv.getAttribute('fill') === 'none' && sv.getAttribute('stroke') && !sv.getAttribute('stroke-dasharray') && el.closest('svg')) {
+            el.dataset.cu = '1'; sv.setAttribute('pathLength', '1'); sv.classList.add('draw');
+          }
+        }
+      });
+    };
+    scan(); fx();
     return () => { document.removeEventListener('pointerdown', down); document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', up); document.removeEventListener('pointercancel', up); mo.disconnect(); io.disconnect(); layer.remove(); };
   }, []);
 }
