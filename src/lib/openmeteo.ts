@@ -134,7 +134,7 @@ function parseWeatherResponse(raw: Record<string, unknown>, location: Location, 
   return {
     location,
     current,
-    hourly: hourly.slice(0, 48), // next 48 hours
+    hourly: hourly.filter(h => h.time >= String((raw.current as Record<string, unknown>).time).slice(0, 13)).slice(0, 48), // Forecast from the current local hour, not midnight
     daily,
     airQuality,
     sun: {
