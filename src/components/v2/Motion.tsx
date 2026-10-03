@@ -84,7 +84,7 @@ export function Ambient({ code, isDay }: { code?: number; isDay?: boolean }) {
   });
   const stars = Array.from({ length: isDay === false && !rain ? 28 : 0 }, (_, i) => ({ left: (i * 47) % 100, top: (i * 31) % 70, delay: (i % 7) * 0.6, size: 1 + (i % 3) }));
   return <div className={`ambient ${isDay === false ? 'night' : 'day'} ${rain ? 'is-rain' : ''} ${clear ? 'is-clear' : ''}`} aria-hidden="true">
-    <i className="tron-floor" /><i className="tron-horizon" /><i className="blob b1" /><i className="blob b2" /><i className="blob b3" />
+    <i className="tron-floor" /><i className="tron-horizon" /><i className="lbar l1" /><i className="lbar l2" /><i className="lbar l3" /><i className="bokeh" /><i className="blob b1" /><i className="blob b2" /><i className="blob b3" />
     {Array.from({ length: 14 }, (_, i) => <i key={`m${i}`} className="mote" style={{ left: `${(i * 41 + 7) % 100}%`, animationDelay: `${-((i * 13) % 20)}s`, animationDuration: `${16 + (i % 5) * 4}s`, width: 2 + (i % 3), height: 2 + (i % 3) }} />)}
     {clear && isDay !== false && <i className="sun-flare" />}
     {stars.map((s, i) => <i key={`s${i}`} className="star" style={{ left: `${s.left}%`, top: `${s.top}%`, animationDelay: `${s.delay}s`, width: s.size, height: s.size }} />)}
