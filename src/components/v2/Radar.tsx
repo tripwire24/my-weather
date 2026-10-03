@@ -17,6 +17,7 @@ export function Radar({ location, mode }: { location: Location; mode: 'dark' | '
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [idx, setIdx] = useState(0);
   const [playing, setPlaying] = useState(true);
+  const [tilt, setTilt] = useState(false);
   const [w, setW] = useState(360);
   const box = useRef<HTMLDivElement>(null);
   const drag = useRef<{ x: number; y: number; px: number; py: number } | null>(null);
@@ -63,7 +64,7 @@ export function Radar({ location, mode }: { location: Location; mode: 'dark' | '
 
   return <section className="v2-card radar-card" aria-label="Rain radar">
     <div className="section-heading"><h2>Rain radar</h2><span className="pill">{frame ? (ago === 0 ? 'LATEST' : `${ago} MIN AGO`) : 'LOADING'}</span></div>
-    <div ref={box} className="radar-map" style={{ height: H }} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} role="img" aria-label={`Animated rain radar around ${location.name}. Drag to move the map.`}>
+    <div className={`radar-stage ${tilt ? 'pitched' : ''}`}><div ref={box} className="radar-map" style={{ height: H }} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp} role="img" aria-label={`Animated rain radar around ${location.name}. Drag to move the map.`}>
       {tiles.map(t => <img key={'b' + t.key} alt="" draggable={false} className="radar-tile" style={{ left: t.left, top: t.top }} src={`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${base}_Base/MapServer/tile/${z}/${t.y}/${t.x}`} />)}
       {data && frames.map((f, i) => <div key={f.time} className="radar-layer" style={{ opacity: i === idx ? 0.85 : 0 }}>{tiles.map(t => <img key={t.key} alt="" draggable={false} className="radar-tile" style={{ left: t.left, top: t.top }} src={`${data.host}${f.path}/256/${z}/${t.x}/${t.y}/2/1_1.png`} />)}</div>)}
       <div className="radar-layer">{tiles.map(t => <img key={'l' + t.key} alt="" draggable={false} className="radar-tile" style={{ left: t.left, top: t.top }} src={`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${base}_Reference/MapServer/tile/${z}/${t.y}/${t.x}`} />)}</div>
@@ -71,7 +72,7 @@ export function Radar({ location, mode }: { location: Location; mode: 'dark' | '
       {loading && !data && <div className="radar-msg">Loading radar…</div>}
       {error && !data && <div className="radar-msg">Radar is not available right now. <button onClick={refresh}>Try again</button></div>}
       <div className="radar-zoom"><button aria-label="Zoom in" disabled={z >= 7} onClick={() => setZ(v => Math.min(7, v + 1))}>+</button><button aria-label="Zoom out" disabled={z <= 4} onClick={() => setZ(v => Math.max(4, v - 1))}>−</button></div>
-    </div>
+    </div></div>
     <div className="radar-controls">
       <button aria-label={playing ? 'Pause' : 'Play'} className="play" onClick={() => setPlaying(p => !p)}>{playing ? '❚❚' : '▶'}</button>
       <button aria-label="Previous frame" onClick={() => step(-1)}>‹</button>
@@ -79,7 +80,7 @@ export function Radar({ location, mode }: { location: Location; mode: 'dark' | '
       <button aria-label="Next frame" onClick={() => step(1)}>›</button>
       <strong>{frame ? fmt(frame.time) : '--'}</strong>
     </div>
-    <div className="radar-legend"><span>Light</span><i /><span>Heavy</span><button onClick={() => { setPan({ x: 0, y: 0 }); }}>Recenter</button><button onClick={refresh}>Refresh</button></div>
+    <div className="radar-legend"><span>Light</span><i /><span>Heavy</span><button aria-pressed={tilt} onClick={() => setTilt(t => !t)}>{tilt ? 'Flat' : '3D tilt'}</button><button onClick={() => { setPan({ x: 0, y: 0 }); }}>Recenter</button><button onClick={refresh}>Refresh</button></div>
     <small className="run-note">Past 2 hours of rain radar. Drag to move, zoom with + and −. Radar © RainViewer · Map © Esri, HERE, Garmin. Radar shows what has fallen, not a forecast.</small>
   </section>;
 }
