@@ -802,3 +802,75 @@ p.run-note { margin-top:0; }
 @media (hover:hover) { .v2-card,.stat-card,.planner-card { transition:transform .5s var(--ease),box-shadow .5s; }.v2-card:hover,.stat-card:hover,.planner-card:hover { transform:translateY(-3px); } }
 @media (max-width:600px) { .now-card .temperature-row { transform:translateZ(34px); }.ambient .blob { filter:blur(50px); } }
 @media (prefers-reduced-motion:reduce) { .ambient .drop,.ambient .flake { display:none; }.now-card { transform:none!important; }.day-main > * { animation:none!important; } }
+
+/* =====================================================================
+   v4 ALIEN TECH: void black, bioluminescent green, iridescent violet.
+   HUD brackets, orbital ring, tech type. Few elements, strong vibe.
+   ===================================================================== */
+.day-app {
+  --font:var(--font-tech),'Helvetica Neue',sans-serif;
+  --bio:#5dffc4; --vio:#9b6bff; --pink:#ff5ce1; --void:#04060d;
+  --sg-bg:#050813; --sg-bg-secondary:#0a1020; --sg-bg-card:rgba(8,14,28,.72);
+  --sg-cyan:var(--bio); --sg-cyan-dim:rgba(93,255,196,.5); --sg-cyan-glow:rgba(93,255,196,.12);
+  --sg-magenta:var(--pink); --sg-blue:var(--vio);
+  --sg-border:rgba(93,255,196,.14); --sg-border-bright:rgba(93,255,196,.5);
+  --sg-text-primary:#e6fff6; --sg-text-secondary:#8fb3a8; --sg-text-muted:#56766c;
+  font-family:var(--font);
+  background:var(--void);
+}
+.ambient::before { content:''; position:absolute; inset:0; background:
+  radial-gradient(60% 40% at 85% 0%,rgba(155,107,255,.38),transparent 70%),
+  radial-gradient(70% 45% at 0% 35%,rgba(93,255,196,.20),transparent 70%),
+  radial-gradient(80% 50% at 60% 100%,rgba(255,92,225,.16),transparent 70%), var(--void); }
+.ambient::after { content:''; position:absolute; inset:0; opacity:.5; background-image:linear-gradient(rgba(93,255,196,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(93,255,196,.07) 1px,transparent 1px); background-size:44px 44px; -webkit-mask-image:radial-gradient(90% 55% at 50% 0%,#000,transparent); mask-image:radial-gradient(90% 55% at 50% 0%,#000,transparent); }
+.ambient .blob { opacity:.45; }
+
+/* header */
+.day-brand { font-weight:700; letter-spacing:.28em; text-transform:uppercase; font-size:14px; }
+.brand-orbit { color:var(--bio); text-shadow:0 0 14px var(--bio); }
+.brand-note { display:none; }
+.place-button { font-family:var(--font); font-weight:600; letter-spacing:.06em; text-transform:uppercase; }
+.forecast-status { font-family:var(--font-jetbrains),monospace; letter-spacing:.08em; font-size:11px; text-transform:uppercase; }
+
+/* hero: floating HUD, thin iridescent numerals, orbital ring */
+.day-app .now-card .eyebrow { font-family:var(--font-jetbrains),monospace; color:var(--bio); letter-spacing:.3em; font-size:11px; }
+.day-app .now-card .eyebrow::before { content:'// '; opacity:.6; }
+.day-app .now-card h1 { font-family:var(--font); font-weight:600; text-transform:uppercase; letter-spacing:.1em; font-size:clamp(24px,7vw,34px); }
+.day-app .big-temperature { font-family:var(--font); font-weight:300; font-size:clamp(120px,40vw,190px); letter-spacing:-.04em; line-height:.9; color:transparent; background:linear-gradient(120deg,var(--bio) 0%,#9fe8ff 38%,var(--vio) 68%,var(--pink) 100%); -webkit-background-clip:text; background-clip:text; filter:drop-shadow(0 0 22px rgba(93,255,196,.35)); }
+.day-app .big-temperature sup { font-weight:300; }
+.day-app .temperature-row { position:relative; }
+.day-app .temperature-row::before { content:''; position:absolute; right:-34px; top:50%; width:190px; height:190px; margin-top:-95px; border-radius:50%; border:1px solid rgba(93,255,196,.35); border-top-color:var(--pink); border-left-color:transparent; animation:orbit 18s linear infinite; pointer-events:none; }
+.day-app .temperature-row::after { content:''; position:absolute; right:6px; top:50%; width:110px; height:110px; margin-top:-55px; border-radius:50%; border:1px dashed rgba(155,107,255,.4); animation:orbit 28s linear infinite reverse; pointer-events:none; }
+@keyframes orbit { to { transform:rotate(360deg); } }
+.day-app .now-metrics { border-top:1px solid var(--sg-border); }
+.day-app .now-metrics span { font-family:var(--font-jetbrains),monospace; letter-spacing:.2em; font-size:10px; color:var(--bio); text-transform:uppercase; }
+.day-app .now-metrics strong { font-family:var(--font); font-weight:500; }
+
+/* cards: chamfered, glowing hairline, corner brackets */
+.day-app .planner-card,.day-app .v2-card,.day-app .stat-card,.day-app .welcome-card,.day-app .detail-grid > *,.day-app .loading-card {
+  position:relative; border:1px solid rgba(93,255,196,.16); border-radius:4px 22px 4px 22px;
+  background:linear-gradient(160deg,rgba(14,24,44,.82),rgba(6,10,22,.82)); box-shadow:0 0 0 1px rgba(0,0,0,.4),0 20px 50px -24px rgba(93,255,196,.25),inset 0 1px 0 rgba(255,255,255,.05);
+}
+.day-app .planner-card::before,.day-app .v2-card::before { content:''; position:absolute; inset:-1px; border-radius:inherit; pointer-events:none; background:
+  linear-gradient(var(--bio),var(--bio)) 0 0/14px 1.5px no-repeat, linear-gradient(var(--bio),var(--bio)) 0 0/1.5px 14px no-repeat,
+  linear-gradient(var(--pink),var(--pink)) 100% 100%/14px 1.5px no-repeat, linear-gradient(var(--pink),var(--pink)) 100% 100%/1.5px 14px no-repeat; filter:drop-shadow(0 0 4px var(--bio)); }
+.day-app .section-heading h1,.day-app .section-heading h2,.day-app .v2-card h2,.day-app .planner-card h2 { font-family:var(--font); font-weight:600; text-transform:uppercase; letter-spacing:.1em; }
+.day-app .section-heading h1 { font-size:clamp(26px,8vw,38px); background:linear-gradient(100deg,var(--bio),var(--vio) 70%,var(--pink)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.day-app .v2-card h3,.day-app .window-result h3,.day-app .stat-card strong { font-family:var(--font); font-weight:600; }
+.day-app .stat-card strong { color:var(--bio); text-shadow:0 0 16px rgba(93,255,196,.4); }
+.day-app .eyebrow,.day-app .pill { font-family:var(--font-jetbrains),monospace; letter-spacing:.18em; text-transform:uppercase; }
+.day-app .pill { background:rgba(93,255,196,.1); color:var(--bio); border:1px solid rgba(93,255,196,.4); border-radius:3px; }
+.day-app .primary-button,.day-app .activity-tabs button.active,.day-app .chip-row button.active,.day-app .place-chips button.selected { background:linear-gradient(120deg,var(--bio),#7fd7ff 55%,var(--vio)); color:#031018; border-color:transparent; font-weight:700; box-shadow:0 0 22px -4px rgba(93,255,196,.6); }
+.day-app .window-mark { background:linear-gradient(135deg,var(--bio),var(--vio)); color:#031018; border-radius:6px 16px 6px 16px; box-shadow:0 0 24px -4px var(--bio); }
+.day-app .activity-tabs,.day-app .chip-row button,.day-app .save-button,.day-app .place-chips button,.day-app .header-actions button { border:1px solid rgba(93,255,196,.25); border-radius:10px; background:rgba(8,14,28,.6); }
+.day-app .rain-bar i,.day-app .golden-bar i { background:linear-gradient(180deg,var(--bio),var(--vio)); box-shadow:0 0 10px rgba(93,255,196,.4); }
+.day-app .radar-stage { border:1px solid rgba(93,255,196,.3); border-radius:4px 18px 4px 18px; box-shadow:0 0 30px -10px rgba(93,255,196,.4); }
+.day-app .quake-list b { background:rgba(155,107,255,.18); color:#c9b3ff; border:1px solid rgba(155,107,255,.5); border-radius:4px; }
+
+/* nav: floating HUD bar, glowing underline pill */
+.day-app .day-nav { border:1px solid rgba(93,255,196,.22); border-radius:16px; background:rgba(5,8,19,.78); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px); box-shadow:0 0 30px -8px rgba(93,255,196,.35),0 16px 40px -12px #000; }
+.day-app .day-nav button { font-family:var(--font-jetbrains),monospace; font-size:9.5px; letter-spacing:.14em; text-transform:uppercase; }
+.day-app .day-nav button.active { color:var(--bio); text-shadow:0 0 10px var(--bio); }
+.day-app .nav-glow { background:linear-gradient(180deg,rgba(93,255,196,.14),rgba(155,107,255,.08)); border:1px solid rgba(93,255,196,.4); border-radius:12px; box-shadow:0 0 20px -4px rgba(93,255,196,.5),inset 0 -2px 0 var(--bio); }
+
+@media (prefers-reduced-motion:reduce) { .day-app .temperature-row::before,.day-app .temperature-row::after { animation:none; } }
